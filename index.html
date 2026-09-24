@@ -126,6 +126,10 @@ table.t tr.dim td{color:var(--muted)}
 #sd-roles{max-height:340px;overflow:auto;border:1px solid var(--grid);border-radius:4px}
 #sd-roles thead th{position:sticky;top:0;background:var(--surface)}
 @media (max-width:760px){.sd-k{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.top-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn.xl{background:var(--good);border-color:var(--good);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.xl::before{content:"";width:12px;height:14px;background:linear-gradient(var(--surface),var(--surface)) 3px 4px/6px 1.5px no-repeat,linear-gradient(var(--surface),var(--surface)) 3px 7px/6px 1.5px no-repeat,linear-gradient(var(--surface),var(--surface)) 3px 10px/6px 1.5px no-repeat;border:1.5px solid var(--surface);border-radius:2px;box-sizing:border-box}
+.xl-note{grid-column:1/-1;margin:0;font-size:13px;color:var(--ink-2);background:var(--brass-soft);border-left:3px solid var(--brass);padding:6px 10px;border-radius:0 4px 4px 0}
 @media (max-width:1100px){ .app{grid-template-columns:1fr} aside.ctl{position:static;max-height:none} }
 @media (max-width:760px){
   .stage{aspect-ratio:auto;min-height:0}
@@ -143,7 +147,8 @@ table.t tr.dim td{color:var(--muted)}
 <div class="app">
   <header class="top">
     <div class="brand"><b>Golden Square Engineering Consultants</b><span>GROWTH PLAN · SEP-2026 → DEC-2031 · AED</span></div>
-    <span class="state" id="state">Base case · matches Excel model</span>
+    <div class="top-r"><a class="btn xl" id="xl-btn" href="#" target="_blank" rel="noopener">Open Excel model</a><span class="state" id="state">Base case · matches Excel model</span></div>
+    <p class="xl-note" id="xl-note" hidden>The Excel model link is being added. Ask Waleed for access in the meantime.</p>
   </header>
 
   <div class="stage-wrap">
@@ -636,6 +641,8 @@ dots.addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(+b.
 document.getElementById('prev').addEventListener('click',()=>go(cur-1));
 document.getElementById('next').addEventListener('click',()=>go(cur+1));
 document.addEventListener('keydown',e=>{if(e.target.matches('input'))return;if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1);});
+const EXCEL_URL = 'https://docs.google.com/spreadsheets/d/11eDcyyaIbtO4hLnJt4gihj0LIsqCPRt0/edit?usp=drive_link&ouid=105845360301937881556&rtpof=true&sd=true';   // paste the OneDrive / Google Drive share link here
+(function(){const b=document.getElementById('xl-btn'),n=document.getElementById('xl-note');if(EXCEL_URL){b.href=EXCEL_URL;}else{b.removeAttribute('target');b.addEventListener('click',e=>{e.preventDefault();n.hidden=!n.hidden;});}})();
 buildControls(); render();
 const h=location.hash.slice(1); go(Math.max(0,slides.findIndex(s=>s.id===h)));
 window.__model=model; window.__P=()=>P;
