@@ -1,0 +1,642 @@
+<title>Golden Square Growth Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#EEF0EC; --surface:#FAFBF8; --surface-2:#E4E8E3; --ink:#152A3F; --ink-2:#4A5A68; --muted:#7A8793;
+  --line:#CBD2D6; --blue:#1F4E79; --blue-2:#6F9CC4; --brass:#A87618; --brass-soft:#E9D6AE;
+  --good:#2E7D4F; --bad:#B23A3A; --grid:#D9DEE0;
+  --c1:#1F4E79; --c2:#6F9CC4; --c3:#A87618; --c4:#9BB08F; --c5:#C9A15A;
+  --shadow:0 1px 2px rgba(21,42,63,.06),0 8px 24px rgba(21,42,63,.07);
+  --display:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",Arial,sans-serif;
+  --mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#0F1720; --surface:#16212C; --surface-2:#1E2B38; --ink:#E4E9EE; --ink-2:#B3BEC8; --muted:#8392A0;
+    --line:#2C3B49; --blue:#7FB0DD; --blue-2:#3F6E97; --brass:#D9A441; --brass-soft:#4A3A1C;
+    --good:#5DBB86; --bad:#E07A7A; --grid:#243240;
+    --c1:#7FB0DD; --c2:#3F6E97; --c3:#D9A441; --c4:#8FB08A; --c5:#A8854A;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#0F1720; --surface:#16212C; --surface-2:#1E2B38; --ink:#E4E9EE; --ink-2:#B3BEC8; --muted:#8392A0;
+  --line:#2C3B49; --blue:#7FB0DD; --blue-2:#3F6E97; --brass:#D9A441; --brass-soft:#4A3A1C;
+  --good:#5DBB86; --bad:#E07A7A; --grid:#243240;
+  --c1:#7FB0DD; --c2:#3F6E97; --c3:#D9A441; --c4:#8FB08A; --c5:#A8854A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.5 var(--body);padding-inline:16px;-webkit-font-smoothing:antialiased}
+.app{max-width:1440px;margin:0 auto;padding-block:14px 24px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+header.top{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand b{font:700 20px/1 var(--display);letter-spacing:.02em;text-transform:uppercase}
+.brand span{font:12px var(--mono);color:var(--muted);letter-spacing:.04em}
+.state{font:500 12px var(--mono);padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);background:var(--surface)}
+.state.adj{border-color:var(--brass);color:var(--brass);background:var(--brass-soft)}
+/* stage */
+.stage-wrap{min-width:0}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);aspect-ratio:16/9;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;padding:34px 40px 28px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+.slide[hidden]{display:none!important}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+h1,h2{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:.005em}
+h1{font-size:44px;line-height:1.05;font-weight:700}
+h2{font-size:28px;line-height:1.1;font-weight:700}
+.lede{color:var(--ink-2);max-width:68ch;margin:0}
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:22px;min-height:0;flex:1}
+.grid2.even{grid-template-columns:1fr 1fr}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{border-top:2px solid var(--ink);padding-top:8px}
+.kpi .l{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font:700 30px/1.1 var(--display);font-variant-numeric:tabular-nums;margin-top:4px}
+.kpi .s{font-size:12.5px;color:var(--ink-2)}
+.kpi.hi{border-top-color:var(--brass)} .kpi.hi .v{color:var(--brass)}
+.panel-title{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin:0 0 6px}
+.chart{width:100%;height:100%;min-height:180px}
+.chart svg{display:block;width:100%;height:100%}
+.chart text{font:11px var(--mono);fill:var(--muted)}
+.chart .lbl{fill:var(--ink-2);font-weight:500}
+.chart .val{fill:var(--ink);font:600 11px var(--mono)}
+.gridl{stroke:var(--grid);stroke-width:1}
+.axis{stroke:var(--line)}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font:12px var(--mono);color:var(--ink-2);margin-top:4px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+table.t{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto}
+table.t th,table.t td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--grid);white-space:nowrap}
+table.t th:first-child,table.t td:first-child{text-align:left;white-space:normal}
+table.t thead th{font:600 11px var(--mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--ink)}
+table.t tr.tot td{font-weight:700;border-top:1px solid var(--ink)}
+table.t tr.sub td{color:var(--ink-2)}
+table.t td.neg{color:var(--bad)}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.callout{border-left:3px solid var(--brass);padding:6px 12px;background:var(--brass-soft);color:var(--ink);font-size:13.5px;border-radius:0 4px 4px 0}
+.pill{display:inline-block;font:600 11px var(--mono);padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+.pill.good{color:var(--good)} .pill.bad{color:var(--bad)}
+/* cover */
+.cover{justify-content:space-between;background:
+  linear-gradient(var(--surface),var(--surface)) padding-box,
+  repeating-linear-gradient(0deg,transparent 0 23px,var(--grid) 23px 24px),
+  repeating-linear-gradient(90deg,transparent 0 23px,var(--grid) 23px 24px)}
+.cover .big{font:700 clamp(40px,6vw,76px)/1 var(--display);letter-spacing:-.01em}
+.cover .big em{font-style:normal;color:var(--brass)}
+.cover .rule{height:1px;background:var(--ink);opacity:.25}
+.drawing{position:absolute;right:28px;top:26px;font:10px var(--mono);color:var(--muted);text-align:right;line-height:1.5;border:1px solid var(--line);padding:6px 10px;background:var(--surface)}
+/* nav */
+.nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dots button{width:auto;height:26px;padding:0 9px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:4px;font:500 11px var(--mono);cursor:pointer}
+.dots button[aria-current="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--surface);font:600 13px var(--body);padding:7px 14px;border-radius:4px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:focus-visible,.dots button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+/* controls */
+aside.ctl{background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);padding:14px 16px 16px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px);max-height:calc(100vh - 30px);overflow:auto}
+aside.ctl h3{font:700 16px var(--display);text-transform:uppercase;letter-spacing:.04em;margin:0 0 2px}
+aside.ctl .hint{font-size:12px;color:var(--muted);margin:0 0 10px}
+details.g{border-top:1px solid var(--line);padding:8px 0}
+details.g summary{cursor:pointer;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);list-style:none;display:flex;justify-content:space-between}
+details.g summary::after{content:"+";color:var(--muted)} details.g[open] summary::after{content:"–"}
+.f{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-top:10px}
+.f label{font-size:13px;color:var(--ink)}
+.f output{font:600 12.5px var(--mono);color:var(--blue);text-align:right;font-variant-numeric:tabular-nums}
+.f input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--blue)}
+.f .base{grid-column:1/-1;font:11px var(--mono);color:var(--muted)}
+.f.changed output{color:var(--brass)}
+.ctl-foot{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+:root{--up:#C0262D}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--up:#FF7B7B}}
+:root[data-theme="dark"]{--up:#FF7B7B}
+.up{color:var(--up)!important;font-weight:700}
+.sd-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.sd-sel{display:flex;align-items:center;gap:6px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.sd-sel select{font:600 14px var(--body);color:var(--ink);background:var(--brass-soft);border:1px solid var(--brass);border-radius:4px;padding:5px 8px;text-transform:none;letter-spacing:0}
+.sd-k{grid-template-columns:repeat(5,minmax(0,1fr))}
+.sd-k .v{font-size:26px}
+table.t td.sel,table.t th.sel{background:var(--brass-soft)}
+table.t tr.dim td{color:var(--muted)}
+#s-staff>*{flex-shrink:0} #s-staff .sd-g{flex:none;align-items:start} #s-staff .chart{height:230px;min-height:0} #sd-hc table.t{font-size:12.5px}
+#sd-roles{max-height:340px;overflow:auto;border:1px solid var(--grid);border-radius:4px}
+#sd-roles thead th{position:sticky;top:0;background:var(--surface)}
+@media (max-width:760px){.sd-k{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1100px){ .app{grid-template-columns:1fr} aside.ctl{position:static;max-height:none} }
+@media (max-width:760px){
+  .stage{aspect-ratio:auto;min-height:0}
+  .slide{position:relative;inset:auto;padding:22px 18px;overflow:visible}
+  h1{font-size:32px} h2{font-size:23px}
+  .grid2,.grid2.even{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi .v{font-size:24px}
+  .chart{height:230px}
+  .drawing{display:none}
+}
+@media (prefers-reduced-motion:no-preference){ .slide:not([hidden]){animation:in .28s ease-out} @keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}} }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><b>Golden Square Engineering Consultants</b><span>GROWTH PLAN · SEP-2026 → DEC-2031 · AED</span></div>
+    <span class="state" id="state">Base case · matches Excel model</span>
+  </header>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+
+      <section class="slide cover" data-title="Plan" id="s-cover">
+        <div class="drawing">DWG GS-FC-2027/31<br>REV <span id="rev-tag">BASE</span><br>SCALE 1 : AED 1,000,000</div>
+        <div>
+          <div class="eyebrow">Five-year growth plan · design &amp; supervision consultancy</div>
+          <h1 style="margin-top:10px;max-width:16ch">From <span id="c-rev26"></span> to <span id="c-rev31"></span> revenue</h1>
+        </div>
+        <div class="big" id="c-big"></div>
+        <div class="rule"></div>
+        <div class="kpis" id="c-kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+        <p class="note">Every figure on these slides is recalculated live from the assumptions panel. At the base settings the numbers equal the Excel workbook “Forecast GS 2027-2031”.</p>
+      </section>
+
+      <section class="slide" data-title="Pipeline" id="s-wins" hidden>
+        <div class="eyebrow">What has to be won</div>
+        <h2 id="h-wins"></h2>
+        <div class="grid2">
+          <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">New projects won per year</p><div class="chart" id="ch-wins"></div><div class="leg" id="lg-wins"></div></div>
+          <div class="tw" id="t-wins"></div>
+        </div>
+      </section>
+
+      <section class="slide" data-title="Revenue" id="s-rev" hidden>
+        <div class="eyebrow">Revenue build-up</div>
+        <h2 id="h-rev"></h2>
+        <div class="grid2" style="grid-template-columns:1fr">
+          <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">Revenue by service, AED million</p><div class="chart" id="ch-rev"></div><div class="leg" id="lg-rev"></div></div>
+          
+        </div>
+      </section>
+
+      <section class="slide" data-title="Team" id="s-team" hidden>
+        <div class="eyebrow">People</div>
+        <h2 id="h-team"></h2>
+        <div class="grid2">
+          <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">Head-count at year end</p><div class="chart" id="ch-team"></div><div class="leg" id="lg-team"></div></div>
+          <div class="tw" id="t-team"></div>
+        </div>
+      </section>
+
+      <section class="slide" data-title="Staff" id="s-staff" hidden>
+        <div class="eyebrow">Staff growth dashboard</div>
+        <div class="sd-bar">
+          <h2 id="h-staff" style="flex:1 1 320px"></h2>
+          <label class="sd-sel" for="sd-period">Period <select id="sd-period"></select></label>
+          <label class="sd-sel" for="sd-team">Team <select id="sd-team"><option>All</option><option>Design</option><option>Supervision</option><option>Admin &amp; Support</option></select></label>
+        </div>
+        <div class="kpis sd-k" id="sd-kpis"></div>
+        <div><p class="panel-title">Head-count by team (month-end) - selected period highlighted</p><div class="tw" id="sd-hc"></div></div>
+        <div class="grid2 sd-g">
+          <div style="min-width:0"><p class="panel-title">New hires per year (net growth)</p><div class="tw" id="sd-hires"></div></div>
+          <div style="min-width:0"><p class="panel-title">Monthly staff vs office capacity</p><div class="chart" id="ch-staff"></div><div class="leg" id="lg-staff"></div></div>
+        </div>
+        <p class="panel-title" id="sd-roles-title" style="margin-top:6px"></p>
+        <div class="tw" id="sd-roles"></div>
+        <p class="note">Roles follow the planned organisation rules from the workbook (lead per N staff, % of discipline, balance). Where the new structure needs fewer people in a role, existing staff are re-assigned; that shows as a negative change.</p>
+      </section>
+
+      <section class="slide" data-title="P&amp;L" id="s-pl" hidden>
+        <div class="eyebrow">Profit &amp; loss</div>
+        <h2 id="h-pl"></h2>
+        <div class="grid2" style="grid-template-columns:1fr">
+          <div class="tw" id="t-pl"></div>
+          
+        </div>
+      </section>
+
+      <section class="slide" data-title="Cash" id="s-cash" hidden>
+        <div class="eyebrow">Cash flow · VAT · income tax</div>
+        <h2 id="h-cash"></h2>
+        <div class="grid2">
+          <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">Month-end cash, AED million</p><div class="chart" id="ch-cash"></div><div class="leg" id="lg-cash"></div></div>
+          <div class="tw" id="t-cash"></div>
+        </div>
+      </section>
+
+      <section class="slide" data-title="Organisation" id="s-org" hidden>
+        <div class="eyebrow">Organisation</div>
+        <h2 id="h-org"></h2>
+        <div class="grid2 even">
+          <div class="tw" id="t-org"></div>
+          <div class="tw" id="t-heads"></div>
+        </div>
+      </section>
+
+    </div>
+    <div class="nav">
+      <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+      <div style="display:flex;gap:8px"><button class="btn ghost" id="prev" type="button">← Prev</button><button class="btn" id="next" type="button">Next →</button></div>
+    </div>
+  </div>
+
+  <aside class="ctl" aria-label="Assumptions">
+    <h3>Adjust the plan</h3>
+    <p class="hint">Move a slider — every slide updates. Changed values turn gold. Grey text shows the Excel base value.</p>
+    <div id="controls"></div>
+    <div class="ctl-foot"><button class="btn ghost" id="reset" type="button">Reset to Excel base</button></div>
+  </aside>
+</div>
+
+<script>
+const DATA = {"scenario":2,"feeDesign":[0.012,0.015],"feeSup":[0.015,0.02],"cats":[{"name":"A: Villas / Small","value":10000000,"dDur":4,"gap":3,"sDur":12,"conv":0.6,"lag":1},{"name":"B: Mid-size Building","value":60000000,"dDur":8,"gap":4,"sDur":20,"conv":0.6,"lag":1},{"name":"C: Large / Mixed-use","value":200000000,"dDur":12,"gap":5,"sDur":30,"conv":0.5,"lag":1}],"escalation":0.03,"awardsDS":[[6,15.569399999999998,18.5544,19.169999999999998,21.609,23.3904],[3,6.6725999999999992,7.731,8.52,10.084200000000001,10.632],[0,2.2241999999999997,2.3193,2.84,2.8812,2.8352]],"awardsSO":[[2,2.9656,3.0924,4.26,4.3218000000000005,5.6704],[2,2.2241999999999997,3.0924,2.84,4.3218000000000005,4.2528],[0,1.4828,1.5462,1.42,1.4406,1.4176]],"growthStartMonth":11,"runoffDesign":6,"runoffSup":18,"activeDesign0":8,"activeSup0":15,"engDesign0":26,"engSup0":5,"prodDesign":365000,"prodSup":800000,"benDesign":0.118,"benSup":0.067,"salaryInc":0.04,"hireAhead":3,"replaceOct":1,"directPct":0.03,"ovInfl":0.03,"backlogDesign":[756125,510125,371125,306000],"backlogSup":[476543.66000000003,443751.66000000003,431291.66000000003,431291.66000000003],"avgSalDesign":[17888.888888888891,17038.461538461539,18370.370370370369,17705.555555555558,17433.760683760684,17591.666666666668,16981.132075471698,16502.82485875706,16231.854838709678],"avgSalSup":[20200,20200,18857.142857142859,17625,16230.76923076923,15421.052631578947,15200,14566.666666666666,14606.060606060606],"admin":[{"name":"Managing Director","salary":80000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"Senior Accountant","salary":15000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"Junior Accountant (new)","salary":8000,"ratio":40,"sep":0,"type":"PERN","startY":2026,"startM":10},{"name":"HR Officer (new)","salary":14000,"ratio":1,"sep":0,"type":"FIX","startY":2026,"startM":10},{"name":"PRO / Government Relations","salary":18000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"HR Assistant (new)","salary":6000,"ratio":1,"sep":0,"type":"FIX","startY":2027,"startM":1},{"name":"Office Admin","salary":11000,"ratio":30,"sep":2,"type":"PERN","startY":2026,"startM":10},{"name":"Admin Assistant","salary":6166.666666666667,"ratio":15,"sep":3,"type":"PERN","startY":2026,"startM":10},{"name":"Office Assistant","salary":3000,"ratio":40,"sep":1,"type":"PERN","startY":2026,"startM":10},{"name":"Sales Officer","salary":6000,"ratio":20,"sep":2,"type":"PERN","startY":2026,"startM":10},{"name":"Business Development Manager (new)","salary":20000,"ratio":60,"sep":0,"type":"GROW","startY":2026,"startM":11},{"name":"IT Support Engineer (new)","salary":10000,"ratio":50,"sep":0,"type":"THR","startY":2026,"startM":10},{"name":"UAE National hire (Emiratisation)","salary":10000,"ratio":50,"sep":0,"type":"LOCAL","startY":2026,"startM":10}],"ovh":[{"name":"Admin salaries (Salary-Admin + Intercompany, incl. GPSSA)","base":182000,"fix":0,"rate":0.028},{"name":"Admin staff benefits","base":12089.457650510463,"fix":0,"rate":0.066425591486321225},{"name":"Rent","base":47000,"fix":0,"rate":587.5},{"name":"Insurance (medical \u0026 PI)","base":14459.72,"fix":0.2,"rate":0},{"name":"Communication","base":6657.4,"fix":0.3,"rate":0},{"name":"Admin Expenses","base":1879.41,"fix":0.4,"rate":0},{"name":"Office Expenses","base":1423.27,"fix":0.3,"rate":0},{"name":"Printing \u0026 Stationery","base":4234,"fix":0.3,"rate":0},{"name":"Repairs \u0026 Maintenance","base":975,"fix":0.5,"rate":0},{"name":"Legal \u0026 Licence","base":5450,"fix":1,"rate":0},{"name":"Bank Charges","base":1642.9,"fix":0,"rate":0.0013},{"name":"Business Promotion \u0026 Marketing","base":5475.3,"fix":0,"rate":0.0075},{"name":"Visa Charges","base":3817.53,"fix":0,"rate":6000},{"name":"Depreciation","base":11228,"fix":0,"rate":8000}],"officeCap":80,"officeStep":15,"supDeskShare":1,"staff0":42,"depLife":36,"janAug":{"revDesign":5530209.908225,"revSup":2509044.66,"salDesign":-4314445.7550813956,"salSup":-1110110.4869105201,"dexp":-309651.62,"ind":-2452202.049975771,"np":-147155.34374268679},"cash":{"opening":1000000,"days":45,"capex":8000,"drawings":0,"vat":0.05,"tax":0.09,"band":0,"taxMonth":9},"staffCount":42,"heads":[{"name":"Mohd Mhasab","desig":"Managing Director"},{"name":"Mohannad Darwish","desig":"HOD Design"},{"name":"Yousif Abu Mezied","desig":"Head of Supervision"},{"name":"Mohammed Kotb","desig":"Lead Concept"},{"name":"Mohamed Elsheikh","desig":"HOD Structural"},{"name":"Mohammed Al Sammak","desig":"Head of MEP"}]};
+const ROLES = {"teams":[{"team":"Design","head":"Head of Design (HOD Design)","discs":[{"name":"Architecture, Landscape \u0026 Visualisation","share":0.49,"roles":[{"name":"Lead Architect / Lead Concept","type":"LEAD","ratio":10,"sep":1},{"name":"Senior Architect / Sr Concept Architect","type":"PCT","ratio":0.2,"sep":2},{"name":"Architect / Design Architect","type":"PCT","ratio":0.3,"sep":4},{"name":"Landscape Designer","type":"PCT","ratio":0.07,"sep":1},{"name":"3D Visualiser","type":"PCT","ratio":0.07,"sep":1},{"name":"Arch Draftsman / BIM Modeller","type":"BAL","ratio":0,"sep":4}]},{"name":"Structural Design","share":0.16,"roles":[{"name":"Head of Structural","type":"LEAD","ratio":10,"sep":1},{"name":"Structural Engineer","type":"PCT","ratio":0.3,"sep":0},{"name":"Structural Draftsman / BIM Modeller","type":"BAL","ratio":0,"sep":3}]},{"name":"MEP Design","share":0.27,"roles":[{"name":"Head of MEP","type":"LEAD","ratio":8,"sep":1},{"name":"Senior Mechanical / Electrical Engineer","type":"PCT","ratio":0.25,"sep":2},{"name":"Mechanical / Electrical Engineer","type":"PCT","ratio":0.35,"sep":3},{"name":"MEP Draftsman","type":"BAL","ratio":0,"sep":1}]},{"name":"Quantity Surveying \u0026 Cost","share":0.04,"roles":[{"name":"Quantity Surveyor","type":"BAL","ratio":0,"sep":0}]},{"name":"Authority Approvals","share":null,"roles":[{"name":"Authority Liaison Engineer","type":"BAL","ratio":0,"sep":1}]}]},{"team":"Supervision","head":"Head of Supervision / Client Representative","discs":[{"name":"Civil \u0026 Structural Supervision","share":0.65,"roles":[{"name":"Resident Engineer","type":"LEAD","ratio":5,"sep":1},{"name":"Civil / Site Engineer","type":"PCT","ratio":0.45,"sep":1},{"name":"Site Inspector","type":"BAL","ratio":0,"sep":0}]},{"name":"MEP Supervision","share":0.2,"roles":[{"name":"MEP Site Engineer","type":"PCT","ratio":0.6,"sep":0},{"name":"MEP Inspector","type":"BAL","ratio":0,"sep":0}]},{"name":"HSE \u0026 Site Document Control","share":null,"roles":[{"name":"Safety Officer (HSE)","type":"PCT","ratio":0.5,"sep":1},{"name":"Site Document Controller","type":"BAL","ratio":0,"sep":1}]}]}]};
+
+/* ---------------- controls ---------------- */
+const BASE = {
+  feeD:(DATA.feeDesign[0]+DATA.feeDesign[1])/2, feeS:(DATA.feeSup[0]+DATA.feeSup[1])/2,
+  wins:1, size:1, prodD:DATA.prodDesign, prodS:DATA.prodSup, salInc:DATA.salaryInc,
+  cap:DATA.officeCap, promo:DATA.ovh[11].rate, days:DATA.cash.days, opening:DATA.cash.opening,
+  vat:DATA.cash.vat, tax:DATA.cash.tax, band:DATA.cash.band, drawings:DATA.cash.drawings
+};
+const CTRL = [
+  {g:'Fees', k:'feeD', l:'Design fee (% of construction value)', min:.012, max:.015, step:.0005, f:v=>(v*100).toFixed(2)+'%'},
+  {g:'Fees', k:'feeS', l:'Supervision fee (% of construction value)', min:.015, max:.02, step:.0005, f:v=>(v*100).toFixed(2)+'%'},
+  {g:'Projects', k:'wins', l:'Projects won vs current plan', min:.5, max:1.5, step:.05, f:v=>Math.round(v*100)+'%'},
+  {g:'Projects', k:'size', l:'Average project size vs plan', min:.6, max:1.4, step:.05, f:v=>Math.round(v*100)+'%'},
+  {g:'Team', k:'prodD', l:'Revenue per design engineer / year', min:250000, max:450000, step:5000, f:v=>'AED '+Math.round(v/1000)+'K'},
+  {g:'Team', k:'prodS', l:'Revenue per supervision engineer / year', min:500000, max:1000000, step:10000, f:v=>'AED '+Math.round(v/1000)+'K'},
+  {g:'Team', k:'salInc', l:'Annual salary increase', min:0, max:.08, step:.005, f:v=>(v*100).toFixed(1)+'%'},
+  {g:'Overheads', k:'cap', l:'Office capacity today (employees)', min:50, max:150, step:5, f:v=>v+' staff'},
+  {g:'Overheads', k:'promo', l:'Marketing spend (% of revenue)', min:0, max:.02, step:.0025, f:v=>(v*100).toFixed(2)+'%'},
+  {g:'Cash & tax', k:'days', l:'Client collection period', min:30, max:60, step:1, f:v=>v+' days'},
+  {g:'Cash & tax', k:'opening', l:'Opening cash 1-Jan-2027', min:0, max:5000000, step:100000, f:v=>fmtM(v,2)},
+  {g:'Cash & tax', k:'drawings', l:'Owner drawings per year (December)', min:0, max:8000000, step:250000, f:v=>fmtM(v,2)},
+  {g:'Cash & tax', k:'tax', l:'Income tax on net profit (paid next Sep.)', min:0, max:.15, step:.005, f:v=>(v*100).toFixed(1)+'%'},
+  {g:'Cash & tax', k:'vat', l:'VAT rate (quarterly to FTA)', min:0, max:.1, step:.005, f:v=>(v*100).toFixed(1)+'%'}
+];
+let P = Object.assign({}, BASE);
+try { const s = JSON.parse(localStorage.getItem('gs-plan-levers')||'null'); if (s) Object.keys(BASE).forEach(k=>{ if (typeof s[k]==='number') P[k]=s[k]; }); } catch(e){}
+
+/* ---------------- model (mirrors Growth_Engine) ---------------- */
+function model(p){
+  const T=64, D=DATA, cats=D.cats, sm=D.growthStartMonth;
+  const Y=t=>2026+Math.floor((8+t)/12), M=t=>((8+t)%12)+1;
+  const z=()=>new Array(T).fill(0);
+  const revDn=z(), revSn=z(), actDn=z(), actSn=z(), wonN=z(), feeWon=z(), projVal=z();
+  for(let k=0;k<3;k++){
+    const c=cats[k], val=c.value*p.size, L=c.dDur+c.gap, S=c.sDur, lag=c.lag;
+    const dsA=z(), soA=z(), cDS=z(), cSO=z(), cDF=z(), cSF=z(), cSOF=z();
+    for(let t=0;t<T;t++){
+      const y=Y(t), m=M(t), on=!(y===2026&&m<sm), div=y===2026?13-sm:12, esc=Math.pow(1+D.escalation,y-2026);
+      dsA[t]=on?D.awardsDS[k][y-2026]*p.wins/div:0; soA[t]=on?D.awardsSO[k][y-2026]*p.wins/div:0;
+      const dF=dsA[t]*val*p.feeD*esc, sF=dsA[t]*val*p.feeS*c.conv*esc, soF=soA[t]*val*p.feeS*esc;
+      cDS[t]=(t?cDS[t-1]:0)+dsA[t]; cSO[t]=(t?cSO[t-1]:0)+soA[t];
+      cDF[t]=(t?cDF[t-1]:0)+dF; cSF[t]=(t?cSF[t-1]:0)+sF; cSOF[t]=(t?cSOF[t-1]:0)+soF;
+      wonN[t]+=dsA[t]+soA[t]; feeWon[t]+=dF+sF+soF; projVal[t]+=(dsA[t]+soA[t])*val*esc;
+    }
+    const at=(a,i)=>i>=0?a[i]:0;
+    for(let t=0;t<T;t++){
+      revDn[t]+=(cDF[t]-at(cDF,t-c.dDur))/c.dDur;
+      revSn[t]+=(at(cSF,t-L)-at(cSF,t-L-S))/S+(at(cSOF,t-lag)-at(cSOF,t-lag-S))/S;
+      actDn[t]+=cDS[t]-at(cDS,t-c.dDur);
+      actSn[t]+=c.conv*(at(cDS,t-L)-at(cDS,t-L-S))+at(cSO,t-lag)-at(cSO,t-lag-S);
+    }
+  }
+  const revD=z(), revS=z(), rev=z(), bD=z(), bS=z(), actD=z(), actS=z();
+  for(let t=0;t<T;t++){
+    bD[t]=t<=3?D.backlogDesign[t]:D.backlogDesign[3]*Math.max(0,(D.runoffDesign-(t-3))/D.runoffDesign);
+    bS[t]=t<=3?D.backlogSup[t]:D.backlogSup[3]*Math.max(0,(D.runoffSup-(t-3))/D.runoffSup);
+    revD[t]=bD[t]+revDn[t]; revS[t]=bS[t]+revSn[t]; rev[t]=revD[t]+revS[t];
+    const fD=t<=3?1:Math.max(0,(D.runoffDesign-(t-3))/D.runoffDesign), fS=t<=3?1:Math.max(0,(D.runoffSup-(t-3))/D.runoffSup);
+    actD[t]=D.activeDesign0*fD+actDn[t]; actS[t]=D.activeSup0*fS+actSn[t];
+  }
+  const req=(arr,prod,t)=>{let s=0,n=0;for(let i=t;i<Math.min(T,t+D.hireAhead);i++){s+=arr[i];n++;}return Math.ceil(s/n*12/prod-1e-9);};
+  const hcD=z(), hcS=z(), eng=z(), newEng=z();
+  for(let t=0;t<T;t++){
+    if(t===0){hcD[0]=D.engDesign0;hcS[0]=D.engSup0;}
+    else{hcD[t]=Math.max(hcD[t-1]+(t===1?D.replaceOct:0),req(revD,p.prodD,t));hcS[t]=Math.max(hcS[t-1],req(revS,p.prodS,t));}
+    eng[t]=hcD[t]+hcS[t]; newEng[t]=t===0?eng[0]-D.engDesign0-D.engSup0:eng[t]-eng[t-1];
+  }
+  const R=D.admin.length, adm=[...Array(R)].map(()=>z()), admT=z(), staff=z(), newStaff=z(), cap=z();
+  const salD=z(), salS=z(), dexp=z(), ind=z(), dep=z(), vatable=z(), np=z(), admCost=z();
+  const ov=D.ovh, rentRate=ov[2].base/p.cap;
+  for(let t=0;t<T;t++){
+    const y=Y(t), m=M(t), salF=Math.pow(1+p.salInc,y-2026), ovF=Math.pow(1+D.ovInfl,y-2026);
+    let sumPrior=0;
+    for(let r=0;r<R;r++){
+      const a=D.admin[r];
+      if(t===0) adm[r][0]=a.sep;
+      else{
+        const before=(y<a.startY)||(y===a.startY&&m<a.startM);
+        let rule;
+        switch(a.type){
+          case'FIX':rule=a.ratio;break;
+          case'PERN':rule=Math.ceil(eng[t]/a.ratio-1e-9);break;
+          case'THR':rule=Math.floor(eng[t]/a.ratio+1e-9);break;
+          case'GROW':rule=Math.max(1,Math.floor(eng[t]/a.ratio+1e-9));break;
+          case'LOCAL':{const S=eng[t]+sumPrior;rule=S>=a.ratio?Math.floor((S-a.ratio)/10)+1:0;break;}
+        }
+        adm[r][t]=before?adm[r][t-1]:Math.max(adm[r][t-1],rule);
+      }
+      sumPrior+=adm[r][t];
+    }
+    admT[t]=sumPrior; staff[t]=eng[t]+admT[t];
+    newStaff[t]=t===0?newEng[0]:newEng[t]+admT[t]-admT[t-1];
+    const dem=hcD[t]+admT[t]+hcS[t]*D.supDeskShare, need=p.cap+Math.ceil(Math.max(0,dem-p.cap)/D.officeStep-1e-9)*D.officeStep;
+    cap[t]=t===0?need:Math.max(cap[t-1],need);
+    const si=t===0?1:(y===2026?3:y-2027+4);
+    salD[t]=-hcD[t]*D.avgSalDesign[si]*(1+D.benDesign)*salF;
+    salS[t]=-hcS[t]*D.avgSalSup[si]*(1+D.benSup)*salF;
+    dexp[t]=-rev[t]*D.directPct;
+    let pay=0; for(let r=0;r<R;r++) pay+=adm[r][t]*D.admin[r].salary;
+    const aSal=pay*(1+ov[0].rate)*salF, ben=aSal*ov[1].rate, rent=cap[t]*rentRate*ovF; admCost[t]=aSal+ben;
+    let staffLines=0, vatLines=rent; const ratio=staff[t]/D.staff0;
+    for(let i=3;i<=9;i++){const v=ov[i].base*ovF*(ov[i].fix+(1-ov[i].fix)*ratio); staffLines+=v; if(i<=8) vatLines+=v;}
+    const bank=rev[t]*ov[10].rate, promo=rev[t]*p.promo;
+    const visa=ov[12].base*ovF*ratio+Math.max(0,newStaff[t])*ov[12].rate*ovF;
+    dep[t]=ov[13].base+Math.max(0,staff[t]-D.staff0)*ov[13].rate/D.depLife;
+    ind[t]=-(aSal+ben+rent+staffLines+bank+promo+visa+dep[t]);
+    vatable[t]=-dexp[t]+vatLines+promo+DATA.cash.capex*Math.max(0,newStaff[t])*ovF;
+    np[t]=rev[t]+salD[t]+salS[t]+dexp[t]+ind[t];
+  }
+  /* annual */
+  const years=[2026,2027,2028,2029,2030,2031];
+  const sumY=(a,y)=>a.reduce((s,v,t)=>s+(Y(t)===y?v:0),0);
+  const dec=(a,y)=>a[Math.min(T-1,(y-2026)*12+3)];
+  const A={};
+  const ja=D.janAug;
+  A.revD=years.map(y=>sumY(revD,y)+(y===2026?ja.revDesign:0));
+  A.revS=years.map(y=>sumY(revS,y)+(y===2026?ja.revSup:0));
+  A.rev=years.map((y,i)=>A.revD[i]+A.revS[i]);
+  A.backlog=years.map(y=>sumY(bD,y)+sumY(bS,y)+(y===2026?ja.revDesign+ja.revSup:0));
+  A.sal=years.map(y=>sumY(salD,y)+sumY(salS,y)+(y===2026?ja.salDesign+ja.salSup:0));
+  A.dexp=years.map(y=>sumY(dexp,y)+(y===2026?ja.dexp:0));
+  A.ind=years.map(y=>sumY(ind,y)+(y===2026?ja.ind:0));
+  A.gp=years.map((y,i)=>A.rev[i]+A.sal[i]+A.dexp[i]);
+  A.np=years.map((y,i)=>A.gp[i]+A.ind[i]);
+  A.tax=A.np.map(v=>-Math.max(0,v-p.band)*p.tax);
+  A.npat=A.np.map((v,i)=>v+A.tax[i]);
+  A.won=years.map(y=>sumY(wonN,y)); A.feeWon=years.map(y=>sumY(feeWon,y)); A.projVal=years.map(y=>sumY(projVal,y));
+  A.hcD=years.map(y=>dec(hcD,y)); A.hcS=years.map(y=>dec(hcS,y)); A.adm=years.map(y=>dec(admT,y)); A.staff=years.map(y=>dec(staff,y));
+  A.actD=years.map(y=>dec(actD,y)); A.actS=years.map(y=>dec(actS,y)); A.cap=years.map(y=>dec(cap,y));
+  A.hcD[0]=dec(hcD,2026);
+  /* won by size (2027-31) */
+  /* cash flow Jan-27 .. Dec-31 */
+  const s1=Math.max(0,Math.min(1,2-p.days/30)), s2=1-s1, cf={month:[],col:[],sal:[],dir:[],ovh:[],cap:[],vIn:[],vPay:[],ct:[],drw:[],net:[],cls:[],ar:[]};
+  let cash=p.opening;
+  for(let t=4;t<T;t++){
+    const y=Y(t), m=M(t), ovF=Math.pow(1+D.ovInfl,y-2026);
+    const col=(rev[t-1]*s1+rev[t-2]*s2)*(1+p.vat);
+    const capx=-Math.max(0,newStaff[t])*DATA.cash.capex*ovF;
+    const vIn=-p.vat*vatable[t];
+    let vPay=0; if(m%3===1){let o=0,i=0;for(let j=t-3;j<t;j++){o+=rev[j];i+=vatable[j];} vPay=-p.vat*(o-i);}
+    const ct=m===DATA.cash.taxMonth?-Math.max(0,A.np[y-1-2026]-p.band)*p.tax:0;
+    const drw=m===12?-p.drawings:0;
+    const net=col+salD[t]+salS[t]+dexp[t]+(ind[t]+dep[t])+capx+vIn+vPay+ct+drw;
+    cash+=net;
+    cf.month.push({y,m}); cf.col.push(col); cf.sal.push(salD[t]+salS[t]); cf.dir.push(dexp[t]); cf.ovh.push(ind[t]+dep[t]); cf.cap.push(capx);
+    cf.vIn.push(vIn); cf.vPay.push(vPay); cf.ct.push(ct); cf.drw.push(drw); cf.net.push(net); cf.cls.push(cash);
+    cf.ar.push((rev[t]+rev[t-1]*s2)*(1+p.vat));
+  }
+  const cy=k=>[2027,2028,2029,2030,2031].map(y=>cf[k].reduce((s,v,i)=>s+(cf.month[i].y===y?v:0),0));
+  const C={col:cy('col'),sal:cy('sal'),dir:cy('dir'),ovh:cy('ovh'),cap:cy('cap'),vat:cy('vIn').map((v,i)=>v+cy('vPay')[i]),ct:cy('ct'),drw:cy('drw'),net:cy('net')};
+  C.close=[2027,2028,2029,2030,2031].map(y=>cf.cls[(y-2027)*12+11]);
+  C.low=[2027,2028,2029,2030,2031].map(y=>Math.min(...cf.cls.slice((y-2027)*12,(y-2027)*12+12)));
+  C.lowMonth=[2027,2028,2029,2030,2031].map(y=>{const s=cf.cls.slice((y-2027)*12,(y-2027)*12+12);return s.indexOf(Math.min(...s))+1;});
+  C.ar=[2027,2028,2029,2030,2031].map(y=>cf.ar[(y-2027)*12+11]);
+  return {A,C,cf,years,monthly:{rev,revD,revS,hcD,hcS,admT,staff,eng,cap,adm,salD,salS,admCost,year:[...Array(T)].map((_,t)=>Y(t))}};
+}
+
+/* ---------------- formatting ---------------- */
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtM(v,d=1){const a=Math.abs(v);if(a>=1e9)return (v/1e9).toFixed(2)+' bn';return (v/1e6).toFixed(d)+'M';}
+function fmtN(v){const r=Math.round(v);return r<0?'('+Math.abs(r).toLocaleString('en-US')+')':r.toLocaleString('en-US');}
+function fmtK(v){return (v<0?'(':'')+Math.abs(v/1e6).toFixed(2)+(v<0?')':'');}
+function pct(v,d=1){return (v*100).toFixed(d)+'%';}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------------- SVG charts ---------------- */
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const n=v/p;const st=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];return st.find(s=>n<=s+1e-9)*p;}
+function bars(el,cats,series,{stacked=true,fmt=v=>v,unit='',labelTop=true,line=null}={}){
+  const W=560,H=300,pl=44,pr=line?40:10,pt=18,pb=30,iw=W-pl-pr,ih=H-pt-pb;
+  const tot=cats.map((_,i)=>stacked?series.reduce((s,se)=>s+Math.max(0,se.values[i]),0):Math.max(...series.map(se=>se.values[i])));
+  const mx=niceMax(Math.max(...tot)*1.08), bw=iw/cats.length, gap=bw*.28;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  for(let i=0;i<=4;i++){const v=mx*i/4,yy=pt+ih-ih*i/4;s+=`<line class="gridl" x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}"/><text x="${pl-6}" y="${yy+4}" text-anchor="end">${fmt(v)}</text>`;}
+  cats.forEach((c,i)=>{
+    const x=pl+i*bw+gap/2, w=bw-gap; let base=pt+ih;
+    if(stacked){series.forEach(se=>{const h=Math.max(0,se.values[i])/mx*ih; base-=h; s+=`<rect x="${x}" y="${base}" width="${w}" height="${h}" style="fill:${se.color}"><title>${esc(se.name)} ${c}: ${fmt(se.values[i])}${unit}</title></rect>`;});
+      if(labelTop) s+=`<text class="val" x="${x+w/2}" y="${base-5}" text-anchor="middle">${fmt(tot[i])}</text>`;}
+    else{const n=series.length,sw=w/n;series.forEach((se,j)=>{const h=Math.max(0,se.values[i])/mx*ih;s+=`<rect x="${x+j*sw}" y="${pt+ih-h}" width="${sw-2}" height="${h}" style="fill:${se.color}"><title>${esc(se.name)} ${c}: ${fmt(se.values[i])}</title></rect>`;});}
+    s+=`<text class="lbl" x="${x+w/2}" y="${H-10}" text-anchor="middle">${c}</text>`;
+  });
+  if(line){const lm=Math.max(...line.values.map(Math.abs))*1.15||1;let d='';line.values.forEach((v,i)=>{const x=pl+i*bw+bw/2,y=pt+ih-(v/lm)*ih;d+=(i?'L':'M')+x+' '+y;});
+    s+=`<path d="${d}" fill="none" style="stroke:${line.color}" stroke-width="2.5"/>`;
+    line.values.forEach((v,i)=>{const x=pl+i*bw+bw/2,y=pt+ih-(v/lm)*ih;s+=`<circle cx="${x}" cy="${y}" r="4" style="fill:${line.color}"/><text class="val" x="${x}" y="${y-8}" text-anchor="middle" style="fill:${line.color}">${line.fmt(v)}</text>`;});}
+  s+=`<line class="axis" x1="${pl}" x2="${W-pr}" y1="${pt+ih}" y2="${pt+ih}"/></svg>`;
+  el.innerHTML=s;
+}
+function legend(el,items){el.innerHTML=items.map(i=>`<span><i style="background:${i.color}"></i>${esc(i.name)}</span>`).join('');}
+function cashLine(el,cf){
+  const W=560,H=300,pl=46,pr=12,pt=16,pb=30,iw=W-pl-pr,ih=H-pt-pb, v=cf.cls, n=v.length;
+  const mn=Math.min(0,...v), mx=niceMax(Math.max(...v)*1.05), span=mx-mn||1;
+  const X=i=>pl+i*iw/(n-1), Yv=val=>pt+ih-(val-mn)/span*ih;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  for(let i=0;i<=4;i++){const val=mn+span*i/4,yy=Yv(val);s+=`<line class="gridl" x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}"/><text x="${pl-6}" y="${yy+4}" text-anchor="end">${(val/1e6).toFixed(0)}M</text>`;}
+  if(mn<0){s+=`<line x1="${pl}" x2="${W-pr}" y1="${Yv(0)}" y2="${Yv(0)}" style="stroke:var(--bad)" stroke-dasharray="4 3"/>`;}
+  let d='',a=`M${X(0)} ${Yv(Math.max(mn,0))}`;v.forEach((val,i)=>{d+=(i?'L':'M')+X(i).toFixed(1)+' '+Yv(val).toFixed(1);a+='L'+X(i).toFixed(1)+' '+Yv(val).toFixed(1);});a+=`L${X(n-1)} ${Yv(Math.max(mn,0))}Z`;
+  s+=`<path d="${a}" style="fill:var(--c2);opacity:.18"/><path d="${d}" fill="none" style="stroke:var(--c1)" stroke-width="2.2"/>`;
+  [2027,2028,2029,2030,2031].forEach((y,k)=>{const x=X(k*12);s+=`<text class="lbl" x="${x+iw/10}" y="${H-10}" text-anchor="middle">${y}</text><line class="gridl" x1="${x}" x2="${x}" y1="${pt}" y2="${pt+ih}"/>`;});
+  const low=v.indexOf(Math.min(...v.slice(0,12)));
+  s+=`<circle cx="${X(low)}" cy="${Yv(v[low])}" r="5" style="fill:var(--brass)"/><text class="val" x="${X(low)+10}" y="${Yv(v[low])-18}" style="fill:var(--brass)">Lowest 2027: ${fmtM(v[low],2)} (${MON[cf.month[low].m-1]})</text>`;
+  const e=n-1; s+=`<circle cx="${X(e)}" cy="${Yv(v[e])}" r="4.5" style="fill:var(--c1)"/><text class="val" x="${X(e)-8}" y="${Yv(v[e])-10}" text-anchor="end">31-Dec-31: ${fmtM(v[e],1)}</text>`;
+  s+=`<line class="axis" x1="${pl}" x2="${W-pr}" y1="${pt+ih}" y2="${pt+ih}"/></svg>`;
+  el.innerHTML=s;
+}
+function hbars(el,rows,baseV){
+  const W=560,H=Math.max(220,rows.length*34+40),pl=190,pr=60,pt=10,rh=(H-pt-24)/rows.length;
+  const mx=Math.max(...rows.flatMap(r=>[Math.abs(r.lo-baseV),Math.abs(r.hi-baseV)]))*1.1||1, cx=pl+(W-pl-pr)/2, sc=(W-pl-pr)/2/mx;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  rows.forEach((r,i)=>{const y=pt+i*rh+rh*.18,h=rh*.64;
+    const a=r.lo-baseV,b=r.hi-baseV;
+    [[a,'var(--bad)',r.loL],[b,'var(--good)',r.hiL]].forEach(([d,c,lab])=>{const x=d<0?cx+d*sc:cx,w=Math.abs(d)*sc;s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" style="fill:${c};opacity:.85"><title>${esc(r.name)} ${lab}: ${fmtM(baseV+d,2)}</title></rect><text x="${d<0?x-4:x+w+4}" y="${y+h/2+4}" text-anchor="${d<0?'end':'start'}" class="val">${d>=0?'+':''}${(d/1e6).toFixed(2)}M</text>`;});
+    s+=`<text class="lbl" x="${pl-8}" y="${y+h/2+4}" text-anchor="end">${esc(r.name)}</text>`;});
+  s+=`<line x1="${cx}" x2="${cx}" y1="${pt}" y2="${H-20}" style="stroke:var(--ink)"/><text x="${cx}" y="${H-5}" text-anchor="middle">Base 2027: ${fmtM(baseV,2)}</text></svg>`;
+  el.innerHTML=s; el.style.height=H+'px';
+}
+function table(el,head,rows){
+  el.innerHTML=`<table class="t"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr class="${r.cls||''}">${r.c.map((c,i)=>`<td class="${i&&typeof r.raw?.[i-1]==='number'&&r.raw[i-1]<0?'neg':''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+const row=(label,vals,f,cls)=>({c:[label,...vals.map(f)],raw:vals,cls});
+
+/* ---------------- render ---------------- */
+const YL=['FY26','2027','2028','2029','2030','2031'];
+function render(){
+  const R=model(P), A=R.A, C=R.C; LAST=R; staffDash(R);
+  const adj=Object.keys(BASE).some(k=>Math.abs(P[k]-BASE[k])>1e-9);
+  const st=document.getElementById('state'); st.textContent=adj?'Adjusted scenario':'Base case · matches Excel model'; st.classList.toggle('adj',adj);
+  document.getElementById('rev-tag').textContent=adj?'ADJ':'BASE';
+  /* cover */
+  document.getElementById('c-rev26').textContent='AED '+fmtM(A.rev[0]);
+  document.getElementById('c-rev31').textContent=fmtM(A.rev[5]);
+  document.getElementById('c-big').innerHTML=`AED ${fmtM(A.npat[1],2)} <em>net profit after tax in 2027</em>`;
+  document.getElementById('c-kpis').innerHTML=[
+    ['Revenue 2031',fmtM(A.rev[5]),`${pct(Math.pow(A.rev[5]/A.rev[0],1/5)-1)} a year from FY26`],
+    ['Engineers end-2031',A.hcD[5]+A.hcS[5],`from ${DATA.engDesign0+DATA.engSup0} today · ${A.staff[5]} staff in total`],
+    ['Cash 31-Dec-2031',fmtM(C.close[4]),`lowest ${fmtM(Math.min(...C.low),2)} (2027)`]
+  ].map((k,i)=>`<div class="kpi ${i===0?'hi':''}"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
+  /* pipeline */
+  document.getElementById('h-wins').textContent=`${Math.round(A.won[1])} projects and ${fmtM(A.projVal[1])} of construction value to win in 2027`;
+  const byCat=[0,1,2].map(k=>YL.map((_,i)=>(DATA.awardsDS[k][i]+DATA.awardsSO[k][i])*P.wins));
+  const col=['var(--c1)','var(--c2)','var(--c3)'];
+  bars(document.getElementById('ch-wins'),['N–D 26','2027','2028','2029','2030','2031'],DATA.cats.map((c,k)=>({name:c.name,values:byCat[k],color:col[k]})),{fmt:v=>Math.round(v)});
+  legend(document.getElementById('lg-wins'),DATA.cats.map((c,k)=>({name:c.name,color:col[k]})));
+  table(document.getElementById('t-wins'),['AED','2027','2028','2029','2030','2031'],[
+    row('Projects won',A.won.slice(1),v=>Math.round(v)),
+    row('Construction value won',A.projVal.slice(1),v=>fmtM(v)),
+    row('Fees won',A.feeWon.slice(1),v=>fmtM(v)),
+    row('Average fee on value',A.feeWon.slice(1).map((f,i)=>A.projVal[i+1]?f/A.projVal[i+1]:0),v=>pct(v,2),'sub'),
+    row('Active design projects (Dec)',A.actD.slice(1),v=>Math.round(v),'sub'),
+    row('Active supervision projects (Dec)',A.actS.slice(1),v=>Math.round(v),'sub')]);
+  /* revenue */
+  document.getElementById('h-rev').textContent=`Revenue grows ${pct(Math.pow(A.rev[5]/A.rev[0],1/5)-1,0)} a year to ${fmtM(A.rev[5])} in 2031`;
+  bars(document.getElementById('ch-rev'),YL,[{name:'Design',values:A.revD.map(v=>v/1e6),color:'var(--c1)'},{name:'Supervision',values:A.revS.map(v=>v/1e6),color:'var(--c3)'}],{fmt:v=>v.toFixed(v<10?1:0)});
+  legend(document.getElementById('lg-rev'),[{name:'Design',color:'var(--c1)'},{name:'Supervision',color:'var(--c3)'}]);
+  /* team */
+  const eng=A.hcD.map((v,i)=>v+A.hcS[i]);
+  document.getElementById('h-team').textContent=`From ${DATA.staffCount} to ${A.staff[5]} people by 2031 — ${eng[5]} of them engineers`;
+  bars(document.getElementById('ch-team'),YL,[{name:'Design engineers',values:A.hcD,color:'var(--c1)'},{name:'Supervision engineers',values:A.hcS,color:'var(--c3)'},{name:'Admin & support',values:A.adm,color:'var(--c4)'}],{fmt:v=>Math.round(v)});
+  legend(document.getElementById('lg-team'),[{name:'Design',color:'var(--c1)'},{name:'Supervision',color:'var(--c3)'},{name:'Admin & support',color:'var(--c4)'}]);
+  table(document.getElementById('t-team'),['Year end',...YL],[
+    row('Design engineers',A.hcD,v=>v),row('Supervision engineers',A.hcS,v=>v),row('Admin & support',A.adm,v=>v),
+    row('Total staff',A.staff,v=>v,'tot'),
+    row('Revenue per engineer (AED K)',A.rev.map((r,i)=>r/eng[i]/1000),v=>Math.round(v),'sub'),
+    row('Office capacity (places)',A.cap,v=>v,'sub')]);
+  /* P&L */
+  document.getElementById('h-pl').textContent=`Net profit after tax: ${fmtM(A.npat[1],2)} in 2027, ${fmtM(A.npat[5])} by 2031`;
+  table(document.getElementById('t-pl'),['AED M',...YL.slice(1)],[
+    row('Revenue',A.rev.slice(1),fmtK),row('Engineering salaries & benefits',A.sal.slice(1),fmtK,'sub'),row('Direct expenses',A.dexp.slice(1),fmtK,'sub'),
+    row('Gross profit',A.gp.slice(1),fmtK,'tot'),row('Indirect expenses',A.ind.slice(1),fmtK,'sub'),
+    row('Net profit before tax',A.np.slice(1),fmtK,'tot'),row(`Income tax ${pct(P.tax,0)}`,A.tax.slice(1),fmtK,'sub'),
+    row('Net profit after tax',A.npat.slice(1),fmtK,'tot'),row('Net margin after tax',A.npat.slice(1).map((v,i)=>v/A.rev[i+1]),v=>pct(v),'sub')]);
+  /* cash */
+  const lowAll=Math.min(...C.low);
+  document.getElementById('h-cash').textContent=lowAll<0?`Cash runs out: lowest point ${fmtM(lowAll,2)} — funding needed`:`Cash stays positive: tightest in ${MON[C.lowMonth[0]-1]}-2027 at ${fmtM(C.low[0],2)}`;
+  cashLine(document.getElementById('ch-cash'),R.cf);
+  legend(document.getElementById('lg-cash'),[{name:`Collections after ${P.days} days · VAT ${pct(P.vat,0)} quarterly · tax ${pct(P.tax,0)} each September`,color:'var(--c1)'}]);
+  table(document.getElementById('t-cash'),['AED M','2027','2028','2029','2030','2031'],[
+    row('Collected from clients (incl. VAT)',C.col,fmtK),row('Salaries & benefits',C.sal,fmtK,'sub'),row('Direct expenses',C.dir,fmtK,'sub'),
+    row('Overheads (cash)',C.ovh,fmtK,'sub'),row('Equipment for new staff',C.cap,fmtK,'sub'),row('VAT (input + paid to FTA)',C.vat,fmtK,'sub'),
+    row('Income tax paid (prior year)',C.ct,fmtK,'sub'),row('Owner drawings',C.drw,fmtK,'sub'),
+    row('Net cash flow',C.net,fmtK,'tot'),row('Closing cash 31-Dec',C.close,fmtK,'tot'),row('Lowest month-end cash',C.low,fmtK,'sub')]);
+  /* org */
+  const cur={d:DATA.engDesign0,s:DATA.engSup0,a:DATA.staffCount-DATA.engDesign0-DATA.engSup0};
+  document.getElementById('h-org').textContent=`${cur.d+cur.s+cur.a} people today → ${A.staff[5]} in 2031`;
+  table(document.getElementById('t-org'),['Team','Sep-26',...YL.slice(1)],[
+    row('Design',[cur.d,...A.hcD.slice(1)],v=>v),row('Supervision',[cur.s,...A.hcS.slice(1)],v=>v),row('Admin & support',[cur.a,...A.adm.slice(1)],v=>v),
+    row('Total',[cur.d+cur.s+cur.a,...A.staff.slice(1)],v=>v,'tot')]);
+  const heads=DATA.heads;
+  document.getElementById('t-heads').innerHTML=`<table class="t"><thead><tr><th>Current leadership</th><th style="text-align:left">Role</th></tr></thead><tbody>${heads.map(h=>`<tr><td>${esc(h.name)}</td><td style="text-align:left">${esc(h.desig)}</td></tr>`).join('')}</tbody></table><p class="note" style="margin-top:8px">New from Oct-2026: HR Officer, Quantity Surveyor, Structural Engineer, MEP site engineer.</p>`;
+}
+
+/* ---------------- staff dashboard ---------------- */
+let LAST=null;
+const PERIODS=[['Sep-26',0],['Dec-26',3],['2027',15],['2028',27],['2029',39],['2030',51],['2031',63]];
+const ADM_DEPT={'Managing Director':'Management','Senior Accountant':'Finance & Accounts','Junior Accountant (new)':'Finance & Accounts','HR Officer (new)':'HR & PRO','PRO / Government Relations':'HR & PRO','HR Assistant (new)':'HR & PRO','Office Admin':'Office Administration','Admin Assistant':'Office Administration','Office Assistant':'Office Administration','Sales Officer':'Sales & Business Development','Business Development Manager (new)':'Sales & Business Development','IT Support Engineer (new)':'IT Support','UAE National hire (Emiratisation)':'Emiratisation (UAE Nationals)'};
+let SD={p:'2027',team:'All'};
+try{const s=JSON.parse(localStorage.getItem('gs-staff-dash')||'null');if(s&&PERIODS.some(p=>p[0]===s.p))SD.p=s.p;if(s&&['All','Design','Supervision','Admin & Support'].includes(s.team))SD.team=s.team;}catch(e){}
+function allocTeam(spec,T,useSep){
+  const out=[], head=Math.min(T,1); out.push({team:spec.team,dept:'Management',name:spec.head,n:useSep?1:head,sep:1});
+  let others=0;
+  spec.discs.forEach(d=>{
+    let Dn; if(d.share==null) Dn=T-head-others; else {Dn=Math.round((T-head)*d.share); others+=Dn;}
+    let above=0;
+    d.roles.forEach(r=>{let n;
+      if(r.type==='LEAD') n=Math.min(Dn-above,Math.ceil(Dn/r.ratio-1e-9));
+      else if(r.type==='PCT') n=Math.min(Dn-above,Math.round(Dn*r.ratio));
+      else n=Dn-above;
+      above+=n; out.push({team:spec.team,dept:d.name,name:r.name,n:useSep?r.sep:n,sep:r.sep});});
+  });
+  return out;
+}
+function rolesAt(R,t){
+  const m=R.monthly, rows=[];
+  ROLES.teams.forEach(s=>{const T=s.team==='Design'?m.hcD[t]:m.hcS[t];rows.push(...allocTeam(s,T,t===0));});
+  DATA.admin.forEach((a,r)=>rows.push({team:'Admin & Support',dept:ADM_DEPT[a.name]||'Admin',name:a.name,n:m.adm[r][t],sep:a.sep}));
+  return rows;
+}
+function staffDash(R){
+  const m=R.monthly, per=PERIODS.find(p=>p[0]===SD.p)||PERIODS[3], t=per[1], yr=m.year[t];
+  const ps=document.getElementById('sd-period'); if(!ps.options.length) ps.innerHTML=PERIODS.map(p=>`<option>${p[0]}</option>`).join('');
+  ps.value=SD.p; document.getElementById('sd-team').value=SD.team;
+  const hcAt=(tm,i)=>tm==='Design'?m.hcD[i]:tm==='Supervision'?m.hcS[i]:tm==='Admin & Support'?m.admT[i]:m.staff[i];
+  const payAt=(tm,i)=>{const d=-m.salD[i],s=-m.salS[i],a=m.admCost[i];return tm==='Design'?d:tm==='Supervision'?s:tm==='Admin & Support'?a:d+s+a;};
+  const prevT=yr===2026?0:(yr-2027)*12+3;
+  const hc=hcAt(SD.team,t), inc=hc-hcAt(SD.team,0), hired=hc-hcAt(SD.team,prevT);
+  let cost=0,rev=0; for(let i=0;i<m.rev.length;i++) if(m.year[i]===yr){cost+=payAt(SD.team,i);rev+=m.rev[i];}
+  document.getElementById('h-staff').textContent=`${SD.team==='All'?'All staff':SD.team}: ${hcAt(SD.team,0)} in Sep-26 → ${hc} at ${SD.p}`;
+  const K=[['Head-count',hc,`${SD.team} · ${SD.p}`,''],['Increase vs Sep-26',(inc>0?'+':'')+inc,`from ${hcAt(SD.team,0)} in Sep-26`,inc>0?'up':''],
+    ['Hired during the year',(hired>0?'+':'')+hired,yr===2026?'Oct–Dec 2026':'during '+yr,hired>0?'up':''],
+    ['Monthly payroll',fmtN(payAt(SD.team,t)),'AED incl. benefits · '+SD.p,''],
+    ['Staff cost '+yr,fmtM(cost,2),`${pct(cost/rev)} of revenue${yr===2026?' (Sep–Dec)':''}`,'']];
+  document.getElementById('sd-kpis').innerHTML=K.map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v ${k[3]}">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
+  const cols=PERIODS.map(p=>p[1]);
+  const hdr=`<thead><tr><th>Team</th>${PERIODS.map(p=>`<th class="${p[0]===SD.p?'sel':''}">${p[0]}</th>`).join('')}<th>Sep-26→2031</th></tr></thead>`;
+  const line=(lab,fn,cls='')=>{const v=cols.map(fn);return `<tr class="${cls}"><td>${lab}</td>${v.map((x,i)=>`<td class="${PERIODS[i][0]===SD.p?'sel ':''}${i&&x>v[i-1]?'up':''}">${x}</td>`).join('')}<td class="${v[v.length-1]-v[0]>0?'up':''}">${v[v.length-1]-v[0]>0?'+':''}${v[v.length-1]-v[0]}</td></tr>`;};
+  document.getElementById('sd-hc').innerHTML=`<table class="t">${hdr}<tbody>${line('Design engineers',i=>m.hcD[i])}${line('Supervision engineers',i=>m.hcS[i])}${line('Admin & support',i=>m.admT[i])}${line('Total staff',i=>m.staff[i],'tot')}
+    <tr class="sub"><td>Office capacity</td>${cols.map((i,k)=>`<td class="${PERIODS[k][0]===SD.p?'sel':''}">${m.cap[i]}</td>`).join('')}<td></td></tr>
+    <tr class="sub"><td>Occupancy</td>${cols.map((i,k)=>{const o=m.staff[i]/m.cap[i];return `<td class="${PERIODS[k][0]===SD.p?'sel ':''}${o>=.95?'up':''}">${pct(o,0)}</td>`;}).join('')}<td></td></tr></tbody></table>`;
+  const HY=[['Oct–Dec 26',0,3],['2027',3,15],['2028',15,27],['2029',27,39],['2030',39,51],['2031',51,63]];
+  const hl=(lab,arr,cls='')=>{const v=HY.map(h=>arr[h[2]]-arr[h[1]]);return `<tr class="${cls}"><td>${lab}</td>${v.map(x=>`<td class="${x>0?'up':''}">${x>0?'+':''}${x}</td>`).join('')}<td class="up">+${v.slice(1).reduce((a,b)=>a+b,0)}</td></tr>`;};
+  document.getElementById('sd-hires').innerHTML=`<table class="t"><thead><tr><th>Team</th>${HY.map(h=>`<th>${h[0]}</th>`).join('')}<th>2027–31</th></tr></thead><tbody>${hl('Design engineers',m.hcD)}${hl('Supervision engineers',m.hcS)}${hl('Admin & support',m.admT)}${hl('Total staff',m.staff,'tot')}</tbody></table>`;
+  /* chart: monthly staff vs capacity */
+  const W=560,H=250,pl=40,pr=12,pt=14,pb=28,iw=W-pl-pr,ih=H-pt-pb,n=m.staff.length,mx=niceMax(Math.max(...m.cap,...m.staff)*1.05);
+  const X=i=>pl+i*iw/(n-1),Yv=v=>pt+ih-v/mx*ih;
+  const path=a=>a.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Yv(v).toFixed(1)).join('');
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  for(let i=0;i<=4;i++){const v=mx*i/4;s+=`<line class="gridl" x1="${pl}" x2="${W-pr}" y1="${Yv(v)}" y2="${Yv(v)}"/><text x="${pl-6}" y="${Yv(v)+4}" text-anchor="end">${Math.round(v)}</text>`;}
+  [2027,2028,2029,2030,2031].forEach((y,k)=>{const x=X(4+k*12);s+=`<line class="gridl" x1="${x}" x2="${x}" y1="${pt}" y2="${pt+ih}"/><text class="lbl" x="${x+iw/11}" y="${H-9}" text-anchor="middle">${y}</text>`;});
+  s+=`<path d="${path(m.cap)}" fill="none" style="stroke:var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/><path d="${path(m.eng)}" fill="none" style="stroke:var(--c3)" stroke-width="1.8"/><path d="${path(m.staff)}" fill="none" style="stroke:var(--c1)" stroke-width="2.4"/>`;
+  s+=`<line x1="${X(t)}" x2="${X(t)}" y1="${pt}" y2="${pt+ih}" style="stroke:var(--brass)" stroke-width="1.5"/><circle cx="${X(t)}" cy="${Yv(m.staff[t])}" r="4.5" style="fill:var(--brass)"/><text class="val" x="${X(t)+(t>50?-8:8)}" y="${Yv(m.staff[t])-10}" text-anchor="${t>50?'end':'start'}" style="fill:var(--brass)">${SD.p}: ${m.staff[t]} staff / ${m.cap[t]} places</text>`;
+  s+=`<line class="axis" x1="${pl}" x2="${W-pr}" y1="${pt+ih}" y2="${pt+ih}"/></svg>`;
+  document.getElementById('ch-staff').innerHTML=s;
+  legend(document.getElementById('lg-staff'),[{name:'Total staff',color:'var(--c1)'},{name:'Engineers',color:'var(--c3)'},{name:'Office capacity',color:'var(--muted)'}]);
+  /* roles */
+  const rows=rolesAt(R,t).filter(r=>(SD.team==='All'||r.team===SD.team)&&(r.n>0||r.sep>0));
+  const tn=rows.reduce((a,r)=>a+r.n,0), ts=rows.reduce((a,r)=>a+r.sep,0);
+  document.getElementById('sd-roles-title').textContent=`Planned roles — ${SD.team} — ${SD.p} (vs Sep-26 actual): ${ts} → ${tn}`;
+  document.getElementById('sd-roles').innerHTML=`<table class="t"><thead><tr><th>Role</th><th style="text-align:left">Team</th><th style="text-align:left">Department</th><th>Sep-26</th><th>${SD.p}</th><th>Change</th></tr></thead><tbody>${rows.map(r=>{const d=r.n-r.sep;return `<tr class="${d>0?'up':''}"><td class="${d>0?'up':''}">${esc(r.name)}</td><td style="text-align:left" class="${d>0?'up':''}">${esc(r.team)}</td><td style="text-align:left" class="${d>0?'up':''}">${esc(r.dept)}</td><td>${r.sep}</td><td class="${d>0?'up':''}">${r.n}</td><td class="${d>0?'up':''}">${d>0?'+':''}${d||'–'}</td></tr>`;}).join('')}</tbody></table>`;
+}
+['sd-period','sd-team'].forEach(id=>document.getElementById(id).addEventListener('change',e=>{if(id==='sd-period')SD.p=e.target.value;else SD.team=e.target.value;try{localStorage.setItem('gs-staff-dash',JSON.stringify(SD));}catch(x){} if(LAST)staffDash(LAST);}));
+
+/* ---------------- controls UI ---------------- */
+function buildControls(){
+  const host=document.getElementById('controls'); const groups=[...new Set(CTRL.map(c=>c.g))];
+  host.innerHTML=groups.map((g,gi)=>`<details class="g" ${gi<3?'open':''}><summary>${g}</summary>${CTRL.filter(c=>c.g===g).map(c=>`
+    <div class="f" id="w-${c.k}"><label for="i-${c.k}">${c.l}</label><output id="o-${c.k}" for="i-${c.k}"></output>
+    <input type="range" id="i-${c.k}" min="${c.min}" max="${c.max}" step="${c.step}" value="${P[c.k]}">
+    <span class="base">Excel base: ${c.f(BASE[c.k])}</span></div>`).join('')}</details>`).join('');
+  CTRL.forEach(c=>{const i=document.getElementById('i-'+c.k);i.addEventListener('input',()=>{P[c.k]=parseFloat(i.value);sync();schedule();});});
+  sync();
+}
+function sync(){CTRL.forEach(c=>{document.getElementById('o-'+c.k).textContent=c.f(P[c.k]);document.getElementById('w-'+c.k).classList.toggle('changed',Math.abs(P[c.k]-BASE[c.k])>1e-9);document.getElementById('i-'+c.k).value=P[c.k];});
+  try{localStorage.setItem('gs-plan-levers',JSON.stringify(P));}catch(e){}}
+let raf=0; function schedule(){cancelAnimationFrame(raf);raf=requestAnimationFrame(render);}
+document.getElementById('reset').addEventListener('click',()=>{P=Object.assign({},BASE);sync();render();});
+
+/* ---------------- slides nav ---------------- */
+const slides=[...document.querySelectorAll('.slide')]; let cur=0;
+const dots=document.getElementById('dots');
+dots.innerHTML=slides.map((s,i)=>`<button type="button" role="tab" aria-current="${i===0}" data-i="${i}">${s.dataset.title}</button>`).join('');
+function go(i){cur=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,j)=>s.hidden=j!==cur);[...dots.children].forEach((b,j)=>b.setAttribute('aria-current',j===cur));
+  document.getElementById('prev').disabled=cur===0;document.getElementById('next').disabled=cur===slides.length-1;
+  try{history.replaceState(null,'','#'+slides[cur].id);}catch(e){}}
+dots.addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(+b.dataset.i);});
+document.getElementById('prev').addEventListener('click',()=>go(cur-1));
+document.getElementById('next').addEventListener('click',()=>go(cur+1));
+document.addEventListener('keydown',e=>{if(e.target.matches('input'))return;if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1);});
+buildControls(); render();
+const h=location.hash.slice(1); go(Math.max(0,slides.findIndex(s=>s.id===h)));
+window.__model=model; window.__P=()=>P;
+</script>
