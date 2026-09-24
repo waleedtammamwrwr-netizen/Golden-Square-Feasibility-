@@ -130,6 +130,12 @@ table.t tr.dim td{color:var(--muted)}
 .btn.xl{background:var(--good);border-color:var(--good);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .btn.xl::before{content:"";width:12px;height:14px;background:linear-gradient(var(--surface),var(--surface)) 3px 4px/6px 1.5px no-repeat,linear-gradient(var(--surface),var(--surface)) 3px 7px/6px 1.5px no-repeat,linear-gradient(var(--surface),var(--surface)) 3px 10px/6px 1.5px no-repeat;border:1.5px solid var(--surface);border-radius:2px;box-sizing:border-box}
 .xl-note{grid-column:1/-1;margin:0;font-size:13px;color:var(--ink-2);background:var(--brass-soft);border-left:3px solid var(--brass);padding:6px 10px;border-radius:0 4px 4px 0}
+.scen{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 10px}
+.scen button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px;padding:7px 4px;font:600 12px var(--body);cursor:pointer;line-height:1.2}
+.scen button small{display:block;font:500 10.5px var(--mono);color:var(--muted)}
+.scen button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.scen button[aria-pressed="true"] small{color:var(--surface);opacity:.8}
+table.t td.cur,table.t th.cur{background:var(--brass-soft)}
 @media (max-width:1100px){ .app{grid-template-columns:1fr} aside.ctl{position:static;max-height:none} }
 @media (max-width:760px){
   .stage{aspect-ratio:auto;min-height:0}
@@ -147,7 +153,7 @@ table.t tr.dim td{color:var(--muted)}
 <div class="app">
   <header class="top">
     <div class="brand"><b>Golden Square Engineering Consultants</b><span>GROWTH PLAN · SEP-2026 → DEC-2031 · AED</span></div>
-    <div class="top-r"><a class="btn xl" id="xl-btn" href="#" target="_blank" rel="noopener">Open Excel model</a><span class="state" id="state">Base case · matches Excel model</span></div>
+    <div class="top-r"><a class="btn xl" id="xl-btn" href="#" target="_blank" rel="noopener">Open Excel model</a><span class="state" id="state">Excel base</span></div>
     <p class="xl-note" id="xl-note" hidden>The Excel model link is being added. Ask Waleed for access in the meantime.</p>
   </header>
 
@@ -166,6 +172,15 @@ table.t tr.dim td{color:var(--muted)}
         <p class="note">Every figure on these slides is recalculated live from the assumptions panel. At the base settings the numbers equal the Excel workbook “Forecast GS 2027-2031”.</p>
       </section>
 
+      <section class="slide" data-title="Scenarios" id="s-scen" hidden>
+        <div class="eyebrow">Three scenarios · supervision fee capped at 1.5%</div>
+        <h2 id="h-scen"></h2>
+        <div class="grid2">
+          <div class="tw" id="t-scen"></div>
+          <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">Net profit after tax by scenario, AED million</p><div class="chart" id="ch-scen"></div><div class="leg" id="lg-scen"></div></div>
+        </div>
+        <p class="note">Projects won 2027–2031 as a share of the original growth plan: Normal 50%, Moderate 75%, Optimistic 100%. Nov–Dec 2026 wins and existing contracts are the same in all three. Your other slider settings apply to all three columns.</p>
+      </section>
       <section class="slide" data-title="Pipeline" id="s-wins" hidden>
         <div class="eyebrow">What has to be won</div>
         <h2 id="h-wins"></h2>
@@ -248,26 +263,27 @@ table.t tr.dim td{color:var(--muted)}
   <aside class="ctl" aria-label="Assumptions">
     <h3>Adjust the plan</h3>
     <p class="hint">Move a slider — every slide updates. Changed values turn gold. Grey text shows the Excel base value.</p>
+    <div class="scen" id="scen-bar" role="group" aria-label="Scenario"></div>
     <div id="controls"></div>
     <div class="ctl-foot"><button class="btn ghost" id="reset" type="button">Reset to Excel base</button></div>
   </aside>
 </div>
 
 <script>
-const DATA = {"scenario":2,"feeDesign":[0.012,0.015],"feeSup":[0.015,0.02],"cats":[{"name":"A: Villas / Small","value":10000000,"dDur":4,"gap":3,"sDur":12,"conv":0.6,"lag":1},{"name":"B: Mid-size Building","value":60000000,"dDur":8,"gap":4,"sDur":20,"conv":0.6,"lag":1},{"name":"C: Large / Mixed-use","value":200000000,"dDur":12,"gap":5,"sDur":30,"conv":0.5,"lag":1}],"escalation":0.03,"awardsDS":[[6,15.569399999999998,18.5544,19.169999999999998,21.609,23.3904],[3,6.6725999999999992,7.731,8.52,10.084200000000001,10.632],[0,2.2241999999999997,2.3193,2.84,2.8812,2.8352]],"awardsSO":[[2,2.9656,3.0924,4.26,4.3218000000000005,5.6704],[2,2.2241999999999997,3.0924,2.84,4.3218000000000005,4.2528],[0,1.4828,1.5462,1.42,1.4406,1.4176]],"growthStartMonth":11,"runoffDesign":6,"runoffSup":18,"activeDesign0":8,"activeSup0":15,"engDesign0":26,"engSup0":5,"prodDesign":365000,"prodSup":800000,"benDesign":0.118,"benSup":0.067,"salaryInc":0.04,"hireAhead":3,"replaceOct":1,"directPct":0.03,"ovInfl":0.03,"backlogDesign":[756125,510125,371125,306000],"backlogSup":[476543.66000000003,443751.66000000003,431291.66000000003,431291.66000000003],"avgSalDesign":[17888.888888888891,17038.461538461539,18370.370370370369,17705.555555555558,17433.760683760684,17591.666666666668,16981.132075471698,16502.82485875706,16231.854838709678],"avgSalSup":[20200,20200,18857.142857142859,17625,16230.76923076923,15421.052631578947,15200,14566.666666666666,14606.060606060606],"admin":[{"name":"Managing Director","salary":80000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"Senior Accountant","salary":15000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"Junior Accountant (new)","salary":8000,"ratio":40,"sep":0,"type":"PERN","startY":2026,"startM":10},{"name":"HR Officer (new)","salary":14000,"ratio":1,"sep":0,"type":"FIX","startY":2026,"startM":10},{"name":"PRO / Government Relations","salary":18000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"HR Assistant (new)","salary":6000,"ratio":1,"sep":0,"type":"FIX","startY":2027,"startM":1},{"name":"Office Admin","salary":11000,"ratio":30,"sep":2,"type":"PERN","startY":2026,"startM":10},{"name":"Admin Assistant","salary":6166.666666666667,"ratio":15,"sep":3,"type":"PERN","startY":2026,"startM":10},{"name":"Office Assistant","salary":3000,"ratio":40,"sep":1,"type":"PERN","startY":2026,"startM":10},{"name":"Sales Officer","salary":6000,"ratio":20,"sep":2,"type":"PERN","startY":2026,"startM":10},{"name":"Business Development Manager (new)","salary":20000,"ratio":60,"sep":0,"type":"GROW","startY":2026,"startM":11},{"name":"IT Support Engineer (new)","salary":10000,"ratio":50,"sep":0,"type":"THR","startY":2026,"startM":10},{"name":"UAE National hire (Emiratisation)","salary":10000,"ratio":50,"sep":0,"type":"LOCAL","startY":2026,"startM":10}],"ovh":[{"name":"Admin salaries (Salary-Admin + Intercompany, incl. GPSSA)","base":182000,"fix":0,"rate":0.028},{"name":"Admin staff benefits","base":12089.457650510463,"fix":0,"rate":0.066425591486321225},{"name":"Rent","base":47000,"fix":0,"rate":587.5},{"name":"Insurance (medical \u0026 PI)","base":14459.72,"fix":0.2,"rate":0},{"name":"Communication","base":6657.4,"fix":0.3,"rate":0},{"name":"Admin Expenses","base":1879.41,"fix":0.4,"rate":0},{"name":"Office Expenses","base":1423.27,"fix":0.3,"rate":0},{"name":"Printing \u0026 Stationery","base":4234,"fix":0.3,"rate":0},{"name":"Repairs \u0026 Maintenance","base":975,"fix":0.5,"rate":0},{"name":"Legal \u0026 Licence","base":5450,"fix":1,"rate":0},{"name":"Bank Charges","base":1642.9,"fix":0,"rate":0.0013},{"name":"Business Promotion \u0026 Marketing","base":5475.3,"fix":0,"rate":0.0075},{"name":"Visa Charges","base":3817.53,"fix":0,"rate":6000},{"name":"Depreciation","base":11228,"fix":0,"rate":8000}],"officeCap":80,"officeStep":15,"supDeskShare":1,"staff0":42,"depLife":36,"janAug":{"revDesign":5530209.908225,"revSup":2509044.66,"salDesign":-4314445.7550813956,"salSup":-1110110.4869105201,"dexp":-309651.62,"ind":-2452202.049975771,"np":-147155.34374268679},"cash":{"opening":1000000,"days":45,"capex":8000,"drawings":0,"vat":0.05,"tax":0.09,"band":0,"taxMonth":9},"staffCount":42,"heads":[{"name":"Mohd Mhasab","desig":"Managing Director"},{"name":"Mohannad Darwish","desig":"HOD Design"},{"name":"Yousif Abu Mezied","desig":"Head of Supervision"},{"name":"Mohammed Kotb","desig":"Lead Concept"},{"name":"Mohamed Elsheikh","desig":"HOD Structural"},{"name":"Mohammed Al Sammak","desig":"Head of MEP"}]};
-const ROLES = {"teams":[{"team":"Design","head":"Head of Design (HOD Design)","discs":[{"name":"Architecture, Landscape \u0026 Visualisation","share":0.49,"roles":[{"name":"Lead Architect / Lead Concept","type":"LEAD","ratio":10,"sep":1},{"name":"Senior Architect / Sr Concept Architect","type":"PCT","ratio":0.2,"sep":2},{"name":"Architect / Design Architect","type":"PCT","ratio":0.3,"sep":4},{"name":"Landscape Designer","type":"PCT","ratio":0.07,"sep":1},{"name":"3D Visualiser","type":"PCT","ratio":0.07,"sep":1},{"name":"Arch Draftsman / BIM Modeller","type":"BAL","ratio":0,"sep":4}]},{"name":"Structural Design","share":0.16,"roles":[{"name":"Head of Structural","type":"LEAD","ratio":10,"sep":1},{"name":"Structural Engineer","type":"PCT","ratio":0.3,"sep":0},{"name":"Structural Draftsman / BIM Modeller","type":"BAL","ratio":0,"sep":3}]},{"name":"MEP Design","share":0.27,"roles":[{"name":"Head of MEP","type":"LEAD","ratio":8,"sep":1},{"name":"Senior Mechanical / Electrical Engineer","type":"PCT","ratio":0.25,"sep":2},{"name":"Mechanical / Electrical Engineer","type":"PCT","ratio":0.35,"sep":3},{"name":"MEP Draftsman","type":"BAL","ratio":0,"sep":1}]},{"name":"Quantity Surveying \u0026 Cost","share":0.04,"roles":[{"name":"Quantity Surveyor","type":"BAL","ratio":0,"sep":0}]},{"name":"Authority Approvals","share":null,"roles":[{"name":"Authority Liaison Engineer","type":"BAL","ratio":0,"sep":1}]}]},{"team":"Supervision","head":"Head of Supervision / Client Representative","discs":[{"name":"Civil \u0026 Structural Supervision","share":0.65,"roles":[{"name":"Resident Engineer","type":"LEAD","ratio":5,"sep":1},{"name":"Civil / Site Engineer","type":"PCT","ratio":0.45,"sep":1},{"name":"Site Inspector","type":"BAL","ratio":0,"sep":0}]},{"name":"MEP Supervision","share":0.2,"roles":[{"name":"MEP Site Engineer","type":"PCT","ratio":0.6,"sep":0},{"name":"MEP Inspector","type":"BAL","ratio":0,"sep":0}]},{"name":"HSE \u0026 Site Document Control","share":null,"roles":[{"name":"Safety Officer (HSE)","type":"PCT","ratio":0.5,"sep":1},{"name":"Site Document Controller","type":"BAL","ratio":0,"sep":1}]}]}]};
+const DATA = {"scenario":2,"feeDesign":[0.012,0.015],"feeSup":[0.015,0.02],"cats":[{"name":"A: Villas / Small","value":10000000,"dDur":4,"gap":3,"sDur":12,"conv":0.6,"lag":1},{"name":"B: Mid-size Building","value":60000000,"dDur":8,"gap":4,"sDur":20,"conv":0.6,"lag":1},{"name":"C: Large / Mixed-use","value":200000000,"dDur":12,"gap":5,"sDur":30,"conv":0.5,"lag":1}],"escalation":0.03,"feeSel":[0.0135,0.015],"feeSupCap":0.015,"scen":[{"name":"Normal","mult":0.5},{"name":"Moderate","mult":0.75},{"name":"Optimistic","mult":1}],"scenActive":"Moderate","awardsDS":[[6,21,24,27,30,33],[3,9,10,12,14,15],[0,3,3,4,4,4]],"awardsSO":[[2,4,4,6,6,8],[2,3,4,4,6,6],[0,2,2,2,2,2]],"growthStartMonth":11,"runoffDesign":6,"runoffSup":18,"activeDesign0":8,"activeSup0":15,"engDesign0":26,"engSup0":5,"prodDesign":365000,"prodSup":800000,"benDesign":0.118,"benSup":0.067,"salaryInc":0.04,"hireAhead":3,"replaceOct":1,"directPct":0.03,"ovInfl":0.03,"backlogDesign":[756125,510125,371125,306000],"backlogSup":[476543.66000000003,443751.66000000003,431291.66000000003,431291.66000000003],"avgSalDesign":[17888.888888888891,17038.461538461539,18370.370370370369,17705.555555555558,17222.916666666664,17130.681818181816,16598.214285714286,16231.854838709678,16859.848484848484],"avgSalSup":[20200,20200,18857.142857142859,17625,17363.636363636364,15500,14772.727272727272,14846.153846153846,14566.666666666666],"admin":[{"name":"Managing Director","salary":80000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"Senior Accountant","salary":15000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"Junior Accountant (new)","salary":8000,"ratio":40,"sep":0,"type":"PERN","startY":2026,"startM":10},{"name":"HR Officer (new)","salary":14000,"ratio":1,"sep":0,"type":"FIX","startY":2026,"startM":10},{"name":"PRO / Government Relations","salary":18000,"ratio":1,"sep":1,"type":"FIX","startY":2026,"startM":10},{"name":"HR Assistant (new)","salary":6000,"ratio":1,"sep":0,"type":"FIX","startY":2027,"startM":1},{"name":"Office Admin","salary":11000,"ratio":30,"sep":2,"type":"PERN","startY":2026,"startM":10},{"name":"Admin Assistant","salary":6166.666666666667,"ratio":15,"sep":3,"type":"PERN","startY":2026,"startM":10},{"name":"Office Assistant","salary":3000,"ratio":40,"sep":1,"type":"PERN","startY":2026,"startM":10},{"name":"Sales Officer","salary":6000,"ratio":20,"sep":2,"type":"PERN","startY":2026,"startM":10},{"name":"Business Development Manager (new)","salary":20000,"ratio":60,"sep":0,"type":"GROW","startY":2026,"startM":11},{"name":"IT Support Engineer (new)","salary":10000,"ratio":50,"sep":0,"type":"THR","startY":2026,"startM":10},{"name":"UAE National hire (Emiratisation)","salary":10000,"ratio":50,"sep":0,"type":"LOCAL","startY":2026,"startM":10}],"ovh":[{"name":"Admin salaries (Salary-Admin + Intercompany, incl. GPSSA)","base":182000,"fix":0,"rate":0.028},{"name":"Admin staff benefits","base":12089.457650510463,"fix":0,"rate":0.066425591486321225},{"name":"Rent","base":47000,"fix":0,"rate":587.5},{"name":"Insurance (medical \u0026 PI)","base":14459.72,"fix":0.2,"rate":0},{"name":"Communication","base":6657.4,"fix":0.3,"rate":0},{"name":"Admin Expenses","base":1879.41,"fix":0.4,"rate":0},{"name":"Office Expenses","base":1423.27,"fix":0.3,"rate":0},{"name":"Printing \u0026 Stationery","base":4234,"fix":0.3,"rate":0},{"name":"Repairs \u0026 Maintenance","base":975,"fix":0.5,"rate":0},{"name":"Legal \u0026 Licence","base":5450,"fix":1,"rate":0},{"name":"Bank Charges","base":1642.9,"fix":0,"rate":0.0013},{"name":"Business Promotion \u0026 Marketing","base":5475.3,"fix":0,"rate":0.0075},{"name":"Visa Charges","base":3817.53,"fix":0,"rate":6000},{"name":"Depreciation","base":11228,"fix":0,"rate":8000}],"officeCap":80,"officeStep":15,"supDeskShare":1,"staff0":42,"depLife":36,"janAug":{"revDesign":5530209.908225,"revSup":2509044.66,"salDesign":-4314445.7550813956,"salSup":-1110110.4869105201,"dexp":-309651.62,"ind":-2452202.049975771,"np":-147155.34374268679},"cash":{"opening":1000000,"days":45,"capex":8000,"drawings":0,"vat":0.05,"tax":0.09,"band":0,"taxMonth":9},"staffCount":42,"heads":[{"name":"Mohd Mhasab","desig":"Managing Director"},{"name":"Mohannad Darwish","desig":"HOD Design"},{"name":"Yousif Abu Mezied","desig":"Head of Supervision"},{"name":"Mohammed Kotb","desig":"Lead Concept"},{"name":"Mohamed Elsheikh","desig":"HOD Structural"},{"name":"Mohammed Al Sammak","desig":"Head of MEP"}]};
+const ROLES = {"teams":[{"team":"Design","head":"Head of Design (HOD Design)","headSal":33000,"discs":[{"name":"Architecture, Landscape \u0026 Visualisation","share":0.49,"roles":[{"name":"Lead Architect / Lead Concept","type":"LEAD","ratio":10,"sep":1,"sal":35000},{"name":"Senior Architect / Sr Concept Architect","type":"PCT","ratio":0.2,"sep":2,"sal":20000},{"name":"Architect / Design Architect","type":"PCT","ratio":0.3,"sep":4,"sal":11875},{"name":"Landscape Designer","type":"PCT","ratio":0.07,"sep":1,"sal":25000},{"name":"3D Visualiser","type":"PCT","ratio":0.07,"sep":1,"sal":20000},{"name":"Arch Draftsman / BIM Modeller","type":"BAL","ratio":0,"sep":4,"sal":9500}]},{"name":"Structural Design","share":0.16,"roles":[{"name":"Head of Structural","type":"LEAD","ratio":10,"sep":1,"sal":40000},{"name":"Structural Engineer","type":"PCT","ratio":0.3,"sep":0,"sal":15000},{"name":"Structural Draftsman / BIM Modeller","type":"BAL","ratio":0,"sep":3,"sal":11333.333333333334}]},{"name":"MEP Design","share":0.27,"roles":[{"name":"Head of MEP","type":"LEAD","ratio":8,"sep":1,"sal":40000},{"name":"Senior Mechanical / Electrical Engineer","type":"PCT","ratio":0.25,"sep":2,"sal":18000},{"name":"Mechanical / Electrical Engineer","type":"PCT","ratio":0.35,"sep":3,"sal":10666.666666666666},{"name":"MEP Draftsman","type":"BAL","ratio":0,"sep":1,"sal":9000}]},{"name":"Quantity Surveying \u0026 Cost","share":0.04,"roles":[{"name":"Quantity Surveyor","type":"BAL","ratio":0,"sep":0,"sal":15000}]},{"name":"Authority Approvals","share":null,"roles":[{"name":"Authority Liaison Engineer","type":"BAL","ratio":0,"sep":1,"sal":13500}]}]},{"team":"Supervision","head":"Head of Supervision / Client Representative","headSal":45000,"discs":[{"name":"Civil \u0026 Structural Supervision","share":0.65,"roles":[{"name":"Resident Engineer","type":"LEAD","ratio":5,"sep":1,"sal":27000},{"name":"Civil / Site Engineer","type":"PCT","ratio":0.45,"sep":1,"sal":14000},{"name":"Site Inspector","type":"BAL","ratio":0,"sep":0,"sal":9000}]},{"name":"MEP Supervision","share":0.2,"roles":[{"name":"MEP Site Engineer","type":"PCT","ratio":0.6,"sep":0,"sal":14000},{"name":"MEP Inspector","type":"BAL","ratio":0,"sep":0,"sal":9000}]},{"name":"HSE \u0026 Site Document Control","share":null,"roles":[{"name":"Safety Officer (HSE)","type":"PCT","ratio":0.5,"sep":1,"sal":9000},{"name":"Site Document Controller","type":"BAL","ratio":0,"sep":1,"sal":6000}]}]}]};
 
 /* ---------------- controls ---------------- */
 const BASE = {
-  feeD:(DATA.feeDesign[0]+DATA.feeDesign[1])/2, feeS:(DATA.feeSup[0]+DATA.feeSup[1])/2,
-  wins:1, size:1, prodD:DATA.prodDesign, prodS:DATA.prodSup, salInc:DATA.salaryInc,
+  feeD:DATA.feeSel[0], feeS:DATA.feeSel[1],
+  wins:(DATA.scen.find(s=>s.name===DATA.scenActive)||{mult:1}).mult, size:1, prodD:DATA.prodDesign, prodS:DATA.prodSup, salInc:DATA.salaryInc,
   cap:DATA.officeCap, promo:DATA.ovh[11].rate, days:DATA.cash.days, opening:DATA.cash.opening,
   vat:DATA.cash.vat, tax:DATA.cash.tax, band:DATA.cash.band, drawings:DATA.cash.drawings
 };
 const CTRL = [
   {g:'Fees', k:'feeD', l:'Design fee (% of construction value)', min:.012, max:.015, step:.0005, f:v=>(v*100).toFixed(2)+'%'},
-  {g:'Fees', k:'feeS', l:'Supervision fee (% of construction value)', min:.015, max:.02, step:.0005, f:v=>(v*100).toFixed(2)+'%'},
-  {g:'Projects', k:'wins', l:'Projects won vs current plan', min:.5, max:1.5, step:.05, f:v=>Math.round(v*100)+'%'},
+  {g:'Fees', k:'feeS', l:'Supervision fee (% of construction value, max 1.5%)', min:.01, max:DATA.feeSupCap, step:.0005, f:v=>(v*100).toFixed(2)+'%'},
+  {g:'Projects', k:'wins', l:'Projects won vs original plan (2027-31)', min:.3, max:1.2, step:.05, f:v=>Math.round(v*100)+'%'},
   {g:'Projects', k:'size', l:'Average project size vs plan', min:.6, max:1.4, step:.05, f:v=>Math.round(v*100)+'%'},
   {g:'Team', k:'prodD', l:'Revenue per design engineer / year', min:250000, max:450000, step:5000, f:v=>'AED '+Math.round(v/1000)+'K'},
   {g:'Team', k:'prodS', l:'Revenue per supervision engineer / year', min:500000, max:1000000, step:10000, f:v=>'AED '+Math.round(v/1000)+'K'},
@@ -281,9 +297,11 @@ const CTRL = [
   {g:'Cash & tax', k:'vat', l:'VAT rate (quarterly to FTA)', min:0, max:.1, step:.005, f:v=>(v*100).toFixed(1)+'%'}
 ];
 let P = Object.assign({}, BASE);
-try { const s = JSON.parse(localStorage.getItem('gs-plan-levers')||'null'); if (s) Object.keys(BASE).forEach(k=>{ if (typeof s[k]==='number') P[k]=s[k]; }); } catch(e){}
+try { const s = JSON.parse(localStorage.getItem('gs-plan-levers-v2')||'null'); if (s) Object.keys(BASE).forEach(k=>{ if (typeof s[k]==='number') P[k]=s[k]; }); } catch(e){}
 
 /* ---------------- model (mirrors Growth_Engine) ---------------- */
+const SA_CACHE={};
+function structAvg(team,T){if(!T)return 0;const k=team+T;if(SA_CACHE[k]!==undefined)return SA_CACHE[k];const spec=ROLES.teams.find(s=>s.team===team);let s=0;allocTeam(spec,T,false).forEach(r=>{s+=r.n*r.sal;});return SA_CACHE[k]=s/T;}
 function model(p){
   const T=64, D=DATA, cats=D.cats, sm=D.growthStartMonth;
   const Y=t=>2026+Math.floor((8+t)/12), M=t=>((8+t)%12)+1;
@@ -294,7 +312,7 @@ function model(p){
     const dsA=z(), soA=z(), cDS=z(), cSO=z(), cDF=z(), cSF=z(), cSOF=z();
     for(let t=0;t<T;t++){
       const y=Y(t), m=M(t), on=!(y===2026&&m<sm), div=y===2026?13-sm:12, esc=Math.pow(1+D.escalation,y-2026);
-      dsA[t]=on?D.awardsDS[k][y-2026]*p.wins/div:0; soA[t]=on?D.awardsSO[k][y-2026]*p.wins/div:0;
+      const wm=y>=2027?p.wins:1; dsA[t]=on?D.awardsDS[k][y-2026]*wm/div:0; soA[t]=on?D.awardsSO[k][y-2026]*wm/div:0;
       const dF=dsA[t]*val*p.feeD*esc, sF=dsA[t]*val*p.feeS*c.conv*esc, soF=soA[t]*val*p.feeS*esc;
       cDS[t]=(t?cDS[t-1]:0)+dsA[t]; cSO[t]=(t?cSO[t-1]:0)+soA[t];
       cDF[t]=(t?cDF[t-1]:0)+dF; cSF[t]=(t?cSF[t-1]:0)+sF; cSOF[t]=(t?cSOF[t-1]:0)+soF;
@@ -350,9 +368,9 @@ function model(p){
     newStaff[t]=t===0?newEng[0]:newEng[t]+admT[t]-admT[t-1];
     const dem=hcD[t]+admT[t]+hcS[t]*D.supDeskShare, need=p.cap+Math.ceil(Math.max(0,dem-p.cap)/D.officeStep-1e-9)*D.officeStep;
     cap[t]=t===0?need:Math.max(cap[t-1],need);
-    const si=t===0?1:(y===2026?3:y-2027+4);
-    salD[t]=-hcD[t]*D.avgSalDesign[si]*(1+D.benDesign)*salF;
-    salS[t]=-hcS[t]*D.avgSalSup[si]*(1+D.benSup)*salF;
+    const di=y===2026?3:(y-2026)*12+3;
+    salD[t]=-hcD[t]*(t===0?D.avgSalDesign[1]:structAvg('Design',hcD[di]))*(1+D.benDesign)*salF;
+    salS[t]=-hcS[t]*(t===0?D.avgSalSup[1]:structAvg('Supervision',hcS[di]))*(1+D.benSup)*salF;
     dexp[t]=-rev[t]*D.directPct;
     let pay=0; for(let r=0;r<R;r++) pay+=adm[r][t]*D.admin[r].salary;
     const aSal=pay*(1+ov[0].rate)*salF, ben=aSal*ov[1].rate, rent=cap[t]*rentRate*ovF; admCost[t]=aSal+ben;
@@ -480,7 +498,7 @@ const YL=['FY26','2027','2028','2029','2030','2031'];
 function render(){
   const R=model(P), A=R.A, C=R.C; LAST=R; staffDash(R);
   const adj=Object.keys(BASE).some(k=>Math.abs(P[k]-BASE[k])>1e-9);
-  const st=document.getElementById('state'); st.textContent=adj?'Adjusted scenario':'Base case · matches Excel model'; st.classList.toggle('adj',adj);
+  const st=document.getElementById('state'); st.textContent=adj?'Adjusted scenario':'Excel base · '+DATA.scenActive+' scenario'; st.classList.toggle('adj',adj);
   document.getElementById('rev-tag').textContent=adj?'ADJ':'BASE';
   /* cover */
   document.getElementById('c-rev26').textContent='AED '+fmtM(A.rev[0]);
@@ -491,6 +509,29 @@ function render(){
     ['Engineers end-2031',A.hcD[5]+A.hcS[5],`from ${DATA.engDesign0+DATA.engSup0} today · ${A.staff[5]} staff in total`],
     ['Cash 31-Dec-2031',fmtM(C.close[4]),`lowest ${fmtM(Math.min(...C.low),2)} (2027)`]
   ].map((k,i)=>`<div class="kpi ${i===0?'hi':''}"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
+  /* scenarios */
+  const SC=DATA.scen.map(s=>({s,R:model(Object.assign({},P,{wins:s.mult}))}));
+  const curName=(DATA.scen.find(s=>Math.abs(s.mult-P.wins)<1e-9)||{}).name;
+  document.getElementById('h-scen').textContent=`2031 revenue: ${SC.map(o=>o.s.name+' '+fmtM(o.R.A.rev[5])).join(' · ')}`;
+  const sum=a=>a.reduce((x,y)=>x+y,0);
+  const srow=(lab,f,fmt,cls='')=>`<tr class="${cls}"><td>${lab}</td>${SC.map(o=>`<td class="${o.s.name===curName?'cur':''}">${fmt(f(o.R))}</td>`).join('')}</tr>`;
+  document.getElementById('t-scen').innerHTML=`<table class="t"><thead><tr><th>AED</th>${SC.map(o=>`<th class="${o.s.name===curName?'cur':''}">${o.s.name}<br><span style="font-weight:400">${Math.round(o.s.mult*100)}% of plan</span></th>`).join('')}</tr></thead><tbody>
+    ${srow('Projects won 2027–31',R=>sum(R.A.won.slice(1)),v=>Math.round(v))}
+    ${srow('Construction value won 2027–31',R=>sum(R.A.projVal.slice(1)),v=>fmtM(v))}
+    ${srow('Revenue 2027',R=>R.A.rev[1],v=>fmtM(v))}
+    ${srow('Revenue 2031',R=>R.A.rev[5],v=>fmtM(v))}
+    ${srow('Net profit after tax 2027',R=>R.A.npat[1],v=>fmtM(v,2))}
+    ${srow('Net profit after tax 2031',R=>R.A.npat[5],v=>fmtM(v,2))}
+    ${srow('Net profit after tax 2027–31',R=>sum(R.A.npat.slice(1)),v=>fmtM(v),'tot')}
+    ${srow('Engineers end-2031',R=>R.A.hcD[5]+R.A.hcS[5],v=>v)}
+    ${srow('Total staff end-2031',R=>R.A.staff[5],v=>v)}
+    ${srow('Cash 31-Dec-2031',R=>R.C.close[4],v=>fmtM(v),'tot')}
+    ${srow('Lowest month-end cash',R=>Math.min(...R.C.low),v=>fmtM(v,2))}
+  </tbody></table>`;
+  const scol=['var(--c4)','var(--c2)','var(--c1)'];
+  bars(document.getElementById('ch-scen'),['2027','2028','2029','2030','2031'],SC.map((o,i)=>({name:o.s.name,values:o.R.A.npat.slice(1).map(v=>v/1e6),color:scol[i]})),{stacked:false,fmt:v=>v.toFixed(v<10?1:0)});
+  legend(document.getElementById('lg-scen'),SC.map((o,i)=>({name:o.s.name,color:scol[i]})));
+  document.querySelectorAll('#scen-bar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.n===curName)));
   /* pipeline */
   document.getElementById('h-wins').textContent=`${Math.round(A.won[1])} projects and ${fmtM(A.projVal[1])} of construction value to win in 2027`;
   const byCat=[0,1,2].map(k=>YL.map((_,i)=>(DATA.awardsDS[k][i]+DATA.awardsSO[k][i])*P.wins));
@@ -552,7 +593,7 @@ const ADM_DEPT={'Managing Director':'Management','Senior Accountant':'Finance & 
 let SD={p:'2027',team:'All'};
 try{const s=JSON.parse(localStorage.getItem('gs-staff-dash')||'null');if(s&&PERIODS.some(p=>p[0]===s.p))SD.p=s.p;if(s&&['All','Design','Supervision','Admin & Support'].includes(s.team))SD.team=s.team;}catch(e){}
 function allocTeam(spec,T,useSep){
-  const out=[], head=Math.min(T,1); out.push({team:spec.team,dept:'Management',name:spec.head,n:useSep?1:head,sep:1});
+  const out=[], head=Math.min(T,1); out.push({team:spec.team,dept:'Management',name:spec.head,n:useSep?1:head,sep:1,sal:spec.headSal});
   let others=0;
   spec.discs.forEach(d=>{
     let Dn; if(d.share==null) Dn=T-head-others; else {Dn=Math.round((T-head)*d.share); others+=Dn;}
@@ -561,7 +602,7 @@ function allocTeam(spec,T,useSep){
       if(r.type==='LEAD') n=Math.min(Dn-above,Math.ceil(Dn/r.ratio-1e-9));
       else if(r.type==='PCT') n=Math.min(Dn-above,Math.round(Dn*r.ratio));
       else n=Dn-above;
-      above+=n; out.push({team:spec.team,dept:d.name,name:r.name,n:useSep?r.sep:n,sep:r.sep});});
+      above+=n; out.push({team:spec.team,dept:d.name,name:r.name,n:useSep?r.sep:n,sep:r.sep,sal:r.sal});});
   });
   return out;
 }
@@ -616,6 +657,7 @@ function staffDash(R){
 ['sd-period','sd-team'].forEach(id=>document.getElementById(id).addEventListener('change',e=>{if(id==='sd-period')SD.p=e.target.value;else SD.team=e.target.value;try{localStorage.setItem('gs-staff-dash',JSON.stringify(SD));}catch(x){} if(LAST)staffDash(LAST);}));
 
 /* ---------------- controls UI ---------------- */
+function buildScen(){const b=document.getElementById('scen-bar');b.innerHTML=DATA.scen.map(s=>`<button type="button" data-n="${s.name}" aria-pressed="false">${s.name}<small>${Math.round(s.mult*100)}% of plan</small></button>`).join('');b.addEventListener('click',e=>{const x=e.target.closest('button');if(!x)return;P.wins=DATA.scen.find(s=>s.name===x.dataset.n).mult;sync();render();});}
 function buildControls(){
   const host=document.getElementById('controls'); const groups=[...new Set(CTRL.map(c=>c.g))];
   host.innerHTML=groups.map((g,gi)=>`<details class="g" ${gi<3?'open':''}><summary>${g}</summary>${CTRL.filter(c=>c.g===g).map(c=>`
@@ -626,7 +668,7 @@ function buildControls(){
   sync();
 }
 function sync(){CTRL.forEach(c=>{document.getElementById('o-'+c.k).textContent=c.f(P[c.k]);document.getElementById('w-'+c.k).classList.toggle('changed',Math.abs(P[c.k]-BASE[c.k])>1e-9);document.getElementById('i-'+c.k).value=P[c.k];});
-  try{localStorage.setItem('gs-plan-levers',JSON.stringify(P));}catch(e){}}
+  try{localStorage.setItem('gs-plan-levers-v2',JSON.stringify(P));}catch(e){}}
 let raf=0; function schedule(){cancelAnimationFrame(raf);raf=requestAnimationFrame(render);}
 document.getElementById('reset').addEventListener('click',()=>{P=Object.assign({},BASE);sync();render();});
 
@@ -643,7 +685,7 @@ document.getElementById('next').addEventListener('click',()=>go(cur+1));
 document.addEventListener('keydown',e=>{if(e.target.matches('input'))return;if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1);});
 const EXCEL_URL = 'https://docs.google.com/spreadsheets/d/11eDcyyaIbtO4hLnJt4gihj0LIsqCPRt0/edit?usp=drive_link&ouid=105845360301937881556&rtpof=true&sd=true';   // paste the OneDrive / Google Drive share link here
 (function(){const b=document.getElementById('xl-btn'),n=document.getElementById('xl-note');if(EXCEL_URL){b.href=EXCEL_URL;}else{b.removeAttribute('target');b.addEventListener('click',e=>{e.preventDefault();n.hidden=!n.hidden;});}})();
-buildControls(); render();
+buildScen(); buildControls(); render();
 const h=location.hash.slice(1); go(Math.max(0,slides.findIndex(s=>s.id===h)));
 window.__model=model; window.__P=()=>P;
 </script>
