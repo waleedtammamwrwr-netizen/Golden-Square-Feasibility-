@@ -198,13 +198,13 @@ table.t td.cur,table.t th.cur{background:var(--brass-soft)}
           <div class="tw" id="t-scen"></div>
           <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">Net profit after tax by scenario, AED million</p><div class="chart" id="ch-scen"></div><div class="leg" id="lg-scen"></div></div>
         </div>
-        <p class="note">Projects won 2027–2031 as a share of the original growth plan: Normal 50%, Moderate 75%, Optimistic 100%. Nov–Dec 2026 wins and existing contracts are the same in all three. Your other slider settings apply to all three columns.</p>
+        <p class="note">Projects 2027–2031 as a share of the original growth plan: Normal 50%, Moderate 75%, Optimistic 100%. Nov–Dec 2026 wins and existing contracts are the same in all three. Your other slider settings apply to all three columns.</p>
       </section>
       <section class="slide" data-title="Pipeline" id="s-wins" hidden>
-        <div class="eyebrow">What has to be won</div>
+        <div class="eyebrow">Project pipeline</div>
         <h2 id="h-wins"></h2>
         <div class="grid2">
-          <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">New projects won per year</p><div class="chart" id="ch-wins"></div><div class="leg" id="lg-wins"></div></div>
+          <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">New projects per year</p><div class="chart" id="ch-wins"></div><div class="leg" id="lg-wins"></div></div>
           <div class="tw" id="t-wins"></div>
         </div>
       </section>
@@ -302,7 +302,7 @@ const BASE = {
 const CTRL = [
   {g:'Fees', k:'feeD', l:'Design fee (% of construction value)', min:.012, max:.015, step:.0005, f:v=>(v*100).toFixed(2)+'%'},
   {g:'Fees', k:'feeS', l:'Supervision fee (% of construction value, max 1.5%)', min:.01, max:DATA.feeSupCap, step:.0005, f:v=>(v*100).toFixed(2)+'%'},
-  {g:'Projects', k:'wins', l:'Projects won vs original plan (2027-31)', min:.3, max:1.2, step:.05, f:v=>Math.round(v*100)+'%'},
+  {g:'Projects', k:'wins', l:'Projects vs original plan (2027-31)', min:.3, max:1.2, step:.05, f:v=>Math.round(v*100)+'%'},
   {g:'Projects', k:'size', l:'Average project size vs plan', min:.6, max:1.4, step:.05, f:v=>Math.round(v*100)+'%'},
   {g:'Team', k:'prodD', l:'Revenue per design engineer / year', min:250000, max:450000, step:5000, f:v=>'AED '+Math.round(v/1000)+'K'},
   {g:'Team', k:'prodS', l:'Revenue per supervision engineer / year', min:500000, max:1000000, step:10000, f:v=>'AED '+Math.round(v/1000)+'K'},
@@ -541,7 +541,7 @@ function render(){
   const scol=['var(--c4)','var(--c2)','var(--c1)'];
   bars(document.getElementById('ch-scen'),['2027','2028','2029','2030','2031'],SC.map((o,i)=>({name:o.s.name,values:o.R.A.npat.slice(1).map(v=>v/1e6),color:scol[i]})),{stacked:false,fmt:v=>v.toFixed(v<10?1:0)});
   legend(document.getElementById('lg-scen'),SC.map((o,i)=>({name:o.s.name,color:scol[i]})));
-  document.getElementById('c-scen').innerHTML=SC.map(o=>`<button type="button" data-n="${o.s.name}" aria-pressed="${o.s.name===curName}"><span class="n">${o.s.name}</span><span class="p">${Math.round(o.s.mult*100)}% of planned projects won</span><span class="m"><span>Revenue 2031</span><b>${fmtM(o.R.A.rev[5])}</b><span>Net profit 2027–31</span><b>${fmtM(sum(o.R.A.npat.slice(1)))}</b></span></button>`).join('');
+  document.getElementById('c-scen').innerHTML=SC.map(o=>`<button type="button" data-n="${o.s.name}" aria-pressed="${o.s.name===curName}"><span class="n">${o.s.name}</span><span class="p">${Math.round(o.s.mult*100)}% of planned projects</span><span class="m"><span>Revenue 2031</span><b>${fmtM(o.R.A.rev[5])}</b><span>Net profit 2027–31</span><b>${fmtM(sum(o.R.A.npat.slice(1)))}</b></span></button>`).join('');
   document.querySelectorAll('#scen-bar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.n===curName)));
   /* pipeline */
   document.getElementById('h-wins').textContent=`${Math.round(A.won[1])} projects and ${fmtM(A.projVal[1])} of construction value to win in 2027`;
@@ -550,9 +550,9 @@ function render(){
   bars(document.getElementById('ch-wins'),['N–D 26','2027','2028','2029','2030','2031'],DATA.cats.map((c,k)=>({name:c.name,values:byCat[k],color:col[k]})),{fmt:v=>Math.round(v)});
   legend(document.getElementById('lg-wins'),DATA.cats.map((c,k)=>({name:c.name,color:col[k]})));
   table(document.getElementById('t-wins'),['AED','2027','2028','2029','2030','2031'],[
-    row('Projects won',A.won.slice(1),v=>Math.round(v)),
-    row('Construction value won',A.projVal.slice(1),v=>fmtM(v)),
-    row('Fees won',A.feeWon.slice(1),v=>fmtM(v)),
+    row('New projects',A.won.slice(1),v=>Math.round(v)),
+    row('Construction value',A.projVal.slice(1),v=>fmtM(v)),
+    row('Fees',A.feeWon.slice(1),v=>fmtM(v)),
     row('Average fee on value',A.feeWon.slice(1).map((f,i)=>A.projVal[i+1]?f/A.projVal[i+1]:0),v=>pct(v,2),'sub'),
     row('Active design projects (Dec)',A.actD.slice(1),v=>Math.round(v),'sub'),
     row('Active supervision projects (Dec)',A.actS.slice(1),v=>Math.round(v),'sub')]);
