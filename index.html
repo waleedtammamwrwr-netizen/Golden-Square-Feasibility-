@@ -532,12 +532,6 @@ function render(){
   const sum=a=>a.reduce((x,y)=>x+y,0);
   const srow=(lab,f,fmt,cls='')=>`<tr class="${cls}"><td>${lab}</td>${SC.map(o=>`<td class="${o.s.name===curName?'cur':''}">${fmt(f(o.R))}</td>`).join('')}</tr>`;
   document.getElementById('t-scen').innerHTML=`<table class="t"><thead><tr><th>AED</th>${SC.map(o=>`<th class="${o.s.name===curName?'cur':''}">${o.s.name}<br><span style="font-weight:400">${Math.round(o.s.mult*100)}% of plan</span></th>`).join('')}</tr></thead><tbody>
-    ${srow('Projects won 2027–31',R=>sum(R.A.won.slice(1)),v=>Math.round(v))}
-    ${srow('Construction value won 2027–31',R=>sum(R.A.projVal.slice(1)),v=>fmtM(v))}
-    ${srow('Revenue 2027',R=>R.A.rev[1],v=>fmtM(v))}
-    ${srow('Revenue 2031',R=>R.A.rev[5],v=>fmtM(v))}
-    ${srow('Net profit after tax 2027',R=>R.A.npat[1],v=>fmtM(v,2))}
-    ${srow('Net profit after tax 2031',R=>R.A.npat[5],v=>fmtM(v,2))}
     ${srow('Net profit after tax 2027–31',R=>sum(R.A.npat.slice(1)),v=>fmtM(v),'tot')}
     ${srow('Engineers end-2031',R=>R.A.hcD[5]+R.A.hcS[5],v=>v)}
     ${srow('Total staff end-2031',R=>R.A.staff[5],v=>v)}
