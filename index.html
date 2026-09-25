@@ -643,7 +643,12 @@ function staffDash(R){
   const line=(lab,fn,cls='')=>{const v=cols.map(fn);return `<tr class="${cls}"><td>${lab}</td>${v.map((x,i)=>`<td class="${PERIODS[i][0]===SD.p?'sel ':''}${i&&x>v[i-1]?'up':''}">${x}</td>`).join('')}<td class="${v[v.length-1]-v[0]>0?'up':''}">${v[v.length-1]-v[0]>0?'+':''}${v[v.length-1]-v[0]}</td></tr>`;};
   document.getElementById('sd-hc').innerHTML=`<table class="t">${hdr}<tbody>${line('Design engineers',i=>m.hcD[i])}${line('Supervision engineers',i=>m.hcS[i])}${line('Admin & support',i=>m.admT[i])}${line('Total staff',i=>m.staff[i],'tot')}
     <tr class="sub"><td>Office capacity</td>${cols.map((i,k)=>`<td class="${PERIODS[k][0]===SD.p?'sel':''}">${m.cap[i]}</td>`).join('')}<td></td></tr>
-    <tr class="sub"><td>Occupancy</td>${cols.map((i,k)=>{const o=m.staff[i]/m.cap[i];return `<td class="${PERIODS[k][0]===SD.p?'sel ':''}${o>=.95?'up':''}">${pct(o,0)}</td>`;}).join('')}<td></td></tr></tbody></table>`;
+    <tr class="sub"><td>Occupancy</td>${cols.map((i,k)=>{const o=m.staff[i]/m.cap[i];return `<td class="${PERIODS[k][0]===SD.p?'sel ':''}${o>=.95?'up':''}">${pct(o,0)}</td>`;}).join('')}<td></td></tr>
+    ${(()=>{const E=cols.map(i=>{const f=Math.pow(1+P.salInc,m.year[i]-2026),o={Design:[0,0],Supervision:[0,0]};if(i>0)rolesAt(R,i).forEach(r=>{const d=r.n-r.sep;if(d>0&&o[r.team]){o[r.team][0]+=d;o[r.team][1]+=d*Math.round((r.sal||0)*f/500)*500;}});return o;});
+      const cell=(k,v,up)=>`<td class="${PERIODS[k][0]===SD.p?'sel ':''}${up&&v?'up':''}">${v?fmtN(v):'–'}</td>`, avg=a=>a[0]?Math.round(a[1]/a[0]/500)*500:0;
+      return `<tr class="sub"><td>Est. salary per new design engineer, AED / month</td>${E.map((o,k)=>cell(k,avg(o.Design))).join('')}<td></td></tr>
+      <tr class="sub"><td>Est. salary per new supervision engineer, AED / month</td>${E.map((o,k)=>cell(k,avg(o.Supervision))).join('')}<td></td></tr>
+      <tr><td><b>Added engineering payroll / month vs Sep-26</b></td>${E.map((o,k)=>cell(k,o.Design[1]+o.Supervision[1],true)).join('')}<td></td></tr>`;})()}</tbody></table>`;
   const HY=[['Oct–Dec 26',0,3],['2027',3,15],['2028',15,27],['2029',27,39],['2030',39,51],['2031',51,63]];
   const hl=(lab,arr,cls='')=>{const v=HY.map(h=>arr[h[2]]-arr[h[1]]);return `<tr class="${cls}"><td>${lab}</td>${v.map(x=>`<td class="${x>0?'up':''}">${x>0?'+':''}${x}</td>`).join('')}<td class="up">+${v.slice(1).reduce((a,b)=>a+b,0)}</td></tr>`;};
   document.getElementById('sd-hires').innerHTML=`<table class="t"><thead><tr><th>Team</th>${HY.map(h=>`<th>${h[0]}</th>`).join('')}<th>2027–31</th></tr></thead><tbody>${hl('Design engineers',m.hcD)}${hl('Supervision engineers',m.hcS)}${hl('Admin & support',m.admT)}${hl('Total staff',m.staff,'tot')}</tbody></table>`;
