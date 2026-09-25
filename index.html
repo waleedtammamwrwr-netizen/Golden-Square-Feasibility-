@@ -153,8 +153,7 @@ table.t td.cur,table.t th.cur{background:var(--brass-soft)}
 <div class="app">
   <header class="top">
     <div class="brand"><b>Golden Square Engineering Consultants</b><span>GROWTH PLAN · SEP-2026 → DEC-2031 · AED</span></div>
-    <div class="top-r"><a class="btn xl" id="xl-btn" href="#" target="_blank" rel="noopener">Open Excel model</a><span class="state" id="state">Excel base</span></div>
-    <p class="xl-note" id="xl-note" hidden>The Excel model link is being added. Ask Waleed for access in the meantime.</p>
+    <div class="top-r"><span class="state" id="state">Excel base</span></div>
   </header>
 
   <div class="stage-wrap">
@@ -683,8 +682,6 @@ dots.addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(+b.
 document.getElementById('prev').addEventListener('click',()=>go(cur-1));
 document.getElementById('next').addEventListener('click',()=>go(cur+1));
 document.addEventListener('keydown',e=>{if(e.target.matches('input'))return;if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1);});
-const EXCEL_URL = 'https://docs.google.com/spreadsheets/d/11eDcyyaIbtO4hLnJt4gihj0LIsqCPRt0/edit?usp=drive_link&ouid=105845360301937881556&rtpof=true&sd=true';   // paste the OneDrive / Google Drive share link here
-(function(){const b=document.getElementById('xl-btn'),n=document.getElementById('xl-note');if(EXCEL_URL){b.href=EXCEL_URL;}else{b.removeAttribute('target');b.addEventListener('click',e=>{e.preventDefault();n.hidden=!n.hidden;});}})();
 buildScen(); buildControls(); render();
 const h=location.hash.slice(1); go(Math.max(0,slides.findIndex(s=>s.id===h)));
 window.__model=model; window.__P=()=>P;
