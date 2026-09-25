@@ -521,7 +521,7 @@ function render(){
   document.getElementById('rev-tag').textContent=adj?'ADJ':'BASE';
   /* cover */
   document.getElementById('c-kpis').innerHTML=[
-    ['Revenue 2031',fmtM(A.rev[5]),`${pct(Math.pow(A.rev[5]/A.rev[0],1/5)-1)} a year from FY26`],
+    ['Revenue 2031',fmtM(A.rev[5]),''],
     ['Engineers end-2031',A.hcD[5]+A.hcS[5],`from ${DATA.engDesign0+DATA.engSup0} today · ${A.staff[5]} staff in total`],
     ['Cash 31-Dec-2031',fmtM(C.close[4]),`lowest ${fmtM(Math.min(...C.low),2)} (2027)`]
   ].map((k,i)=>`<div class="kpi ${i===0?'hi':''}"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
@@ -547,7 +547,7 @@ function render(){
   const scol=['var(--c4)','var(--c2)','var(--c1)'];
   bars(document.getElementById('ch-scen'),['2027','2028','2029','2030','2031'],SC.map((o,i)=>({name:o.s.name,values:o.R.A.npat.slice(1).map(v=>v/1e6),color:scol[i]})),{stacked:false,fmt:v=>v.toFixed(v<10?1:0)});
   legend(document.getElementById('lg-scen'),SC.map((o,i)=>({name:o.s.name,color:scol[i]})));
-  document.getElementById('c-scen').innerHTML=SC.map(o=>`<button type="button" data-n="${o.s.name}" aria-pressed="${o.s.name===curName}"><span class="n">${o.s.name}</span><span class="p">${Math.round(o.s.mult*100)}% of planned projects won</span><span class="m"><span>Revenue 2031</span><b>${fmtM(o.R.A.rev[5])}</b><span>Net profit 2027</span><b>${fmtM(o.R.A.npat[1],2)}</b><span>Net profit 2027–31</span><b>${fmtM(sum(o.R.A.npat.slice(1)))}</b></span></button>`).join('');
+  document.getElementById('c-scen').innerHTML=SC.map(o=>`<button type="button" data-n="${o.s.name}" aria-pressed="${o.s.name===curName}"><span class="n">${o.s.name}</span><span class="p">${Math.round(o.s.mult*100)}% of planned projects won</span><span class="m"><span>Revenue 2031</span><b>${fmtM(o.R.A.rev[5])}</b><span>Net profit 2027–31</span><b>${fmtM(sum(o.R.A.npat.slice(1)))}</b></span></button>`).join('');
   document.querySelectorAll('#scen-bar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.n===curName)));
   /* pipeline */
   document.getElementById('h-wins').textContent=`${Math.round(A.won[1])} projects and ${fmtM(A.projVal[1])} of construction value to win in 2027`;
@@ -626,7 +626,7 @@ function allocTeam(spec,T,useSep){
 function rolesAt(R,t){
   const m=R.monthly, rows=[];
   ROLES.teams.forEach(s=>{const T=s.team==='Design'?m.hcD[t]:m.hcS[t];rows.push(...allocTeam(s,T,t===0));});
-  DATA.admin.forEach((a,r)=>rows.push({team:'Admin & Support',dept:ADM_DEPT[a.name]||'Admin',name:a.name,n:m.adm[r][t],sep:a.sep}));
+  DATA.admin.forEach((a,r)=>rows.push({team:'Admin & Support',dept:ADM_DEPT[a.name]||'Admin',name:a.name,n:m.adm[r][t],sep:a.sep,sal:a.salary}));
   return rows;
 }
 function staffDash(R){
@@ -668,8 +668,10 @@ function staffDash(R){
   /* roles */
   const rows=rolesAt(R,t).filter(r=>(SD.team==='All'||r.team===SD.team)&&(r.n>0||r.sep>0));
   const tn=rows.reduce((a,r)=>a+r.n,0), ts=rows.reduce((a,r)=>a+r.sep,0);
-  document.getElementById('sd-roles-title').textContent=`Planned roles — ${SD.team} — ${SD.p} (vs Sep-26 actual): ${ts} → ${tn}`;
-  document.getElementById('sd-roles').innerHTML=`<table class="t"><thead><tr><th>Role</th><th style="text-align:left">Team</th><th style="text-align:left">Department</th><th>Sep-26</th><th>${SD.p}</th><th>Change</th></tr></thead><tbody>${rows.map(r=>{const d=r.n-r.sep;return `<tr class="${d>0?'up':''}"><td class="${d>0?'up':''}">${esc(r.name)}</td><td style="text-align:left" class="${d>0?'up':''}">${esc(r.team)}</td><td style="text-align:left" class="${d>0?'up':''}">${esc(r.dept)}</td><td>${r.sep}</td><td class="${d>0?'up':''}">${r.n}</td><td class="${d>0?'up':''}">${d>0?'+':''}${d||'–'}</td></tr>`;}).join('')}</tbody></table>`;
+  const sf=Math.pow(1+P.salInc,yr-2026), estSal=r=>Math.round((r.sal||0)*sf/500)*500;
+  const added=rows.reduce((a,r)=>{const d=r.n-r.sep;return a+(d>0?d*estSal(r):0);},0);
+  document.getElementById('sd-roles-title').textContent=`Planned roles — ${SD.team} — ${SD.p} (vs Sep-26 actual): ${ts} → ${tn} · new hires add AED ${fmtN(added)} a month in basic salaries`;
+  document.getElementById('sd-roles').innerHTML=`<table class="t"><thead><tr><th>Role</th><th style="text-align:left">Team</th><th style="text-align:left">Department</th><th>Sep-26</th><th>${SD.p}</th><th>Change</th><th>Salary / mo<br><span style="font-weight:400">est., each</span></th><th>Added / mo</th></tr></thead><tbody>${rows.map(r=>{const d=r.n-r.sep,s=d>0?estSal(r):0;return `<tr class="${d>0?'up':''}"><td class="${d>0?'up':''}">${esc(r.name)}</td><td style="text-align:left" class="${d>0?'up':''}">${esc(r.team)}</td><td style="text-align:left;white-space:normal" class="${d>0?'up':''}">${esc(r.dept)}</td><td>${r.sep}</td><td class="${d>0?'up':''}">${r.n}</td><td class="${d>0?'up':''}">${d>0?'+':''}${d||'–'}</td><td class="${d>0?'up':''}">${s?fmtN(s):''}</td><td class="${d>0?'up':''}">${s?fmtN(d*s):''}</td></tr>`;}).join('')}<tr class="tot"><td colspan="7">Added payroll for new hires, AED / month (basic salary, benefits extra)</td><td>${fmtN(added)}</td></tr></tbody></table>`;
 }
 ['sd-period','sd-team'].forEach(id=>document.getElementById(id).addEventListener('change',e=>{if(id==='sd-period')SD.p=e.target.value;else SD.team=e.target.value;try{localStorage.setItem('gs-staff-dash',JSON.stringify(SD));}catch(x){} if(LAST)staffDash(LAST);}));
 
