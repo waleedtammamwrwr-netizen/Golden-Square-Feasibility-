@@ -355,7 +355,8 @@ const CTRL = [
   {g:'Cash & tax', k:'vat', l:'VAT rate (quarterly to FTA)', min:0, max:.1, step:.005, f:v=>(v*100).toFixed(1)+'%'}
 ];
 let P = Object.assign({}, BASE);
-try { const s = JSON.parse(localStorage.getItem('gs-plan-levers-v3')||'null'); if (s) Object.keys(BASE).forEach(k=>{ if (typeof s[k]==='number') P[k]=s[k]; }); } catch(e){}
+const LEVER_KEY='gs-plan-levers-'+(function(t){let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return (h>>>0).toString(36);})(JSON.stringify(BASE)+JSON.stringify(DATA.ovh)+JSON.stringify(DATA.admin));
+try { const s = JSON.parse(localStorage.getItem(LEVER_KEY)||'null'); if (s) Object.keys(BASE).forEach(k=>{ if (typeof s[k]==='number') P[k]=s[k]; }); } catch(e){}
 
 /* ---------------- model (mirrors Growth_Engine) ---------------- */
 const SA_CACHE={};
@@ -793,7 +794,7 @@ function buildControls(){
   sync();
 }
 function sync(){CTRL.forEach(c=>{document.getElementById('o-'+c.k).textContent=c.f(P[c.k]);document.getElementById('w-'+c.k).classList.toggle('changed',Math.abs(P[c.k]-BASE[c.k])>1e-9);document.getElementById('i-'+c.k).value=P[c.k];});
-  try{localStorage.setItem('gs-plan-levers-v3',JSON.stringify(P));}catch(e){}}
+  try{localStorage.setItem(LEVER_KEY,JSON.stringify(P));}catch(e){}}
 let raf=0; function schedule(){cancelAnimationFrame(raf);raf=requestAnimationFrame(render);}
 document.getElementById('reset').addEventListener('click',()=>{P=Object.assign({},BASE);sync();render();});
 
