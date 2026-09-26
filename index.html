@@ -217,15 +217,6 @@ table.t thead th{border-bottom-color:var(--gold)} table.t tr.tot td{border-top-c
         <p class="note">Every figure on these slides is recalculated live from the assumptions panel. At the base settings the numbers equal the Excel workbook “Forecast GS 2027-2031”.</p>
       </section>
 
-      <section class="slide" data-title="Scenarios" id="s-scen" hidden>
-        <div class="eyebrow">Three scenarios · supervision fee capped at 1.5%</div>
-        <h2 id="h-scen"></h2>
-        <div class="grid2">
-          <div class="tw" id="t-scen"></div>
-          <div style="display:flex;flex-direction:column;min-height:0"><p class="panel-title">Net profit after tax by scenario, AED million</p><div class="chart" id="ch-scen"></div><div class="leg" id="lg-scen"></div></div>
-        </div>
-        <p class="note" id="scen-note">Projects 2027–2031 as a share of the original growth plan. Nov–Dec 2026 wins and existing contracts are the same in all three. Your other slider settings apply to all three columns.</p>
-      </section>
       <section class="slide" data-title="Pipeline" id="s-wins" hidden>
         <div class="eyebrow">Project pipeline</div>
         <h2 id="h-wins"></h2>
@@ -576,20 +567,7 @@ function render(){
   /* scenarios */
   const SC=DATA.scen.map(s=>({s,R:model(Object.assign({},P,{wins:s.mult}))}));
   const curName=(DATA.scen.find(s=>Math.abs(s.mult-P.wins)<1e-9)||{}).name;
-  document.getElementById('scen-note').textContent=`Projects 2027–2031 as a share of the original growth plan: ${DATA.scen.map(s=>s.name+' '+Math.round(s.mult*100)+'%').join(', ')}. Nov–Dec 2026 wins and existing contracts are the same in all three. Your other slider settings apply to all three columns.`;
-  document.getElementById('h-scen').textContent=`2031 revenue: ${SC.map(o=>o.s.name+' '+fmtM(o.R.A.rev[5])).join(' · ')}`;
   const sum=a=>a.reduce((x,y)=>x+y,0);
-  const srow=(lab,f,fmt,cls='')=>`<tr class="${cls}"><td>${lab}</td>${SC.map(o=>`<td class="${o.s.name===curName?'cur':''}">${fmt(f(o.R))}</td>`).join('')}</tr>`;
-  document.getElementById('t-scen').innerHTML=`<table class="t"><thead><tr><th>AED</th>${SC.map(o=>`<th class="${o.s.name===curName?'cur':''}">${o.s.name}<br><span style="font-weight:400">${Math.round(o.s.mult*100)}% of plan</span></th>`).join('')}</tr></thead><tbody>
-    ${srow('Net profit after tax 2027–31',R=>sum(R.A.npat.slice(1)),v=>fmtM(v),'tot')}
-    ${srow('Engineers end-2031',R=>R.A.hcD[5]+R.A.hcS[5],v=>v)}
-    ${srow('Total staff end-2031',R=>R.A.staff[5],v=>v)}
-    ${srow('Cash 31-Dec-2031',R=>R.C.close[4],v=>fmtM(v),'tot')}
-    ${srow('Lowest month-end cash',R=>Math.min(...R.C.low),v=>fmtM(v,2))}
-  </tbody></table>`;
-  const scol=['var(--c4)','var(--c2)','var(--c1)'];
-  bars(document.getElementById('ch-scen'),['2027','2028','2029','2030','2031'],SC.map((o,i)=>({name:o.s.name,values:o.R.A.npat.slice(1).map(v=>v/1e6),color:scol[i]})),{stacked:false,fmt:v=>v.toFixed(v<10?1:0)});
-  legend(document.getElementById('lg-scen'),SC.map((o,i)=>({name:o.s.name,color:scol[i]})));
   document.getElementById('c-scen').innerHTML=SC.map(o=>`<button type="button" data-n="${o.s.name}" aria-pressed="${o.s.name===curName}"><span class="n">${o.s.name}</span><span class="p">${Math.round(o.s.mult*100)}% of planned projects</span><span class="m"><span>Revenue 2031</span><b>${fmtM(o.R.A.rev[5])}</b><span>Net profit 2027–31</span><b>${fmtM(sum(o.R.A.npat.slice(1)))}</b></span></button>`).join('');
   document.querySelectorAll('#scen-bar button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.n===curName)));
   /* pipeline */
@@ -616,9 +594,7 @@ function render(){
   legend(document.getElementById('lg-team'),[{name:'Design',color:'var(--c1)'},{name:'Supervision',color:'var(--c3)'},{name:'Admin & support',color:'var(--c4)'}]);
   table(document.getElementById('t-team'),['Year end',...YL],[
     row('Design engineers',A.hcD,v=>v),row('Supervision engineers',A.hcS,v=>v),row('Admin & support',A.adm,v=>v),
-    row('Total staff',A.staff,v=>v,'tot'),
-    row('Revenue per engineer (AED K)',A.rev.map((r,i)=>r/eng[i]/1000),v=>Math.round(v),'sub'),
-    row('Office capacity (places)',A.cap,v=>v,'sub')]);
+    row('Total staff',A.staff,v=>v,'tot')]);
   /* P&L */
   document.getElementById('h-pl').textContent=`Net profit after tax: ${fmtM(A.npat[1],2)} in 2027, ${fmtM(A.npat[5])} by 2031`;
   table(document.getElementById('t-pl'),['AED M',...YL.slice(1)],[
